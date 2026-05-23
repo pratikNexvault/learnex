@@ -62,9 +62,9 @@ body { background:var(--bg); color:#dcd7ec; font-family:'Manrope',sans-serif; pa
 </div>
 
 <script>
-const activePasswordKey = localStorage.getItem('ncz_master_password') || 'nexaX1977';
-
 function triggerAdminSecurityGateChallenge() {
+    const activeMasterPassword = localStorage.getItem('ncz_master_password') || 'nexaX1977';
+
     Swal.fire({
         title: 'Master Control Decryption Challenge',
         input: 'password', 
@@ -72,24 +72,21 @@ function triggerAdminSecurityGateChallenge() {
         backgroundColor: '#12101a', 
         color: '#fff', 
         confirmButtonText: 'Decrypt Gate', 
-        showCancelButton: false,
-        allowOutsideClick: false
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        preConfirm: (inputValue) => {
+            // Fix: Agar password match nahi hua toh popup band nahi hoga aur error dikhayega
+            if (inputValue !== activeMasterPassword) {
+                Swal.showValidationMessage('Invalid Signature Key! Try again.');
+                return false;
+            }
+            return inputValue;
+        }
     }).then((res) => {
-        if(res.value === activePasswordKey) { 
-            // Fix Matrix: Ab sahi pass hone par panel block explicit load karega aur user page par redirect nahi karega
+        if(res.isConfirmed) { 
+            showToast('Access granted! Initializing dashboard matrix...', true);
             document.getElementById('adminMainPanel').classList.add('show-panel');
             initAdminPortalWorkspacePanel(); 
-        }
-        else { 
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Signature Key',
-                text: 'Redirecting to hub gateway door.',
-                backgroundColor: '#12101a', color: '#fff',
-                timer: 1500, showConfirmButton: false
-            }).then(() => {
-                window.location.href = 'index.html'; 
-            });
         }
     });
 }
@@ -125,29 +122,38 @@ function publishBatchNodeItem() {
     db.push({ id: String(Date.now()), title, img, video, cat: cat || 'General' });
     localStorage.setItem('ncz_db', JSON.stringify(db));
     renderInventoryTableNodes();
-    alert('Node published compiled complete!');
+    
+    document.getElementById('node-title').value = '';
+    document.getElementById('node-img').value = '';
+    document.getElementById('node-video').value = '';
+    document.getElementById('node-cat').value = '';
+    showToast('Batch node published successfully!', true);
 }
-
-// Custom Clear inputs form reset utilities
-document.getElementById('node-title').value = '';
-document.getElementById('node-img').value = '';
-document.getElementById('node-video').value = '';
-document.getElementById('node-cat').value = '';
 
 function purgeNodeIndex(idx) {
     let db = JSON.parse(localStorage.getItem('ncz_db') || '[]');
     db.splice(idx, 1);
     localStorage.setItem('ncz_db', JSON.stringify(db));
     renderInventoryTableNodes();
+    showToast('Node removed from database index.');
 }
 
 function commitConfigurations() {
     localStorage.setItem('ncz_shortlink', document.getElementById('cfg-link').value);
     localStorage.setItem('ncz_verify_path', document.getElementById('cfg-path').value);
     const pass = document.getElementById('cfg-pass').value;
-    if(pass.trim().length >= 4) localStorage.setItem('ncz_master_password', pass);
-    alert('System settings configuration successfully update saved complete!');
+    if(pass.trim().length >= 4) {
+        localStorage.setItem('ncz_master_password', pass);
+        showToast('Password and systems settings configured!', true);
+    } else {
+        showToast('Configurations link updated!', true);
+    }
 }
+
+function showToast(msg, ok) {
+    Swal.fire({ toast: true, position: 'top-end', icon: ok?'success':'info', title: msg, showConfirmButton: false, timer: 1800, backgroundColor: '#12101a', color: '#fff' });
+}
+
 window.addEventListener('load', triggerAdminSecurityGateChallenge);
 </script>
 </body>
