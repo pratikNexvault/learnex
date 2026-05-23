@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workspace Directory · NexCoderZ</title>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+<script src="https://cdn.tailwindcss.com/"></script>
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root { --bg:#03040a; --surface:#080b14; --border:rgba(255,255,255,0.05); --gold:#ff3366; --gold2:#9d4edd; --muted:#7d72a1; }
+body { background:var(--bg); color:#f4f1ff; font-family:'Manrope',sans-serif; min-height:100vh; }
+nav { height:58px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:rgba(3,4,10,0.8); backdrop-filter:blur(20px); }
+.wrap { max-width:1100px; margin:0 auto; padding:20px 14px; }
+.hero { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px; }
+.tab-btn { padding:12px 16px; font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--muted); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; }
+.tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+.folder, .vitem { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:8px; cursor:pointer; }
+.folder:hover, .vitem:hover { border-color:var(--gold); }
+.fi-ico { width:36px; height:36px; background:rgba(255,51,102,0.06); border:1px solid rgba(255,51,102,0.15); display:flex; align-items:center; justify-content:center; border-radius:8px; color:var(--gold); }
+.vbadge { font-size:0.55rem; font-weight:700; text-transform:uppercase; padding:2px 6px; border-radius:100px; background:rgba(16,185,129,0.1); color:#10b981; }
+
+#testUI { position:fixed; inset:0; z-index:9999; background:#040308; display:none; flex-direction:column; }
+.test-nav { height:52px; background:#0e0c14; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+.test-timer { background:rgba(255,51,102,0.1); border:1px solid rgba(255,51,102,0.2); padding:4px 10px; border-radius:6px; color:var(--gold); font-size:0.85rem; }
+.test-body { display:flex; flex:1; overflow:hidden; flex-direction:column; }
+.test-sidebar { width:100%; max-height:220px; background:var(--surface); border-bottom:1px solid var(--border); overflow-y:auto; }
+.q-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; padding:10px; }
+.q-btn { aspect-ratio:1; border-radius:6px; border:1px solid var(--border); background:#040308; color:var(--muted); font-size:0.75rem; font-weight:bold; }
+.test-main { flex:1; overflow-y:auto; padding:16px; background:#07060c; }
+.opt-btn { display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); width:100%; margin-bottom:6px; font-size:0.85rem; text-align:left; color:inherit; }
+.opt-btn.selected { border-color:var(--gold); background:rgba(255,51,102,0.05); }
+.opt-lbl { width:20px; height:20px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold; }
+.opt-btn.selected .opt-lbl { background:var(--gold); color:#fff; border-color:var(--gold); }
+.q-actions { display:flex; gap:10px; padding:12px; border-top:1px solid var(--border); background:var(--surface); }
+
+#player-view { position:fixed; inset:0; background:#000; z-index:100000; display:none; }
+.close-player-btn { position:absolute; top:16px; left:16px; z-index:10; background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:6px; color:#fff; font-size:0.8rem; font-weight:bold; }
+.loading-overlay { position:absolute; inset:0; background:#040308; display:flex; align-items:center; justify-content:center; }
+.loader { width:40px; height:40px; border:4px solid rgba(255,51,102,0.15); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+</style>
+</head>
+<body>
+<nav>
+    <button onclick="window.location.href='dashboard.html'" style="background:rgba(255,255,255,0.04); border:1px solid var(--border); padding:6px 12px; border-radius:6px; font-size:0.75rem; color:white;">← Back</button>
+    <span style="font-size:0.75rem; color:var(--gold); font-weight:bold;">#WORKSPACE-ACTIVE</span>
+</nav>
+<div class="wrap">
+    <div class="hero">
+        <span style="font-size:0.6rem; text-transform:uppercase; color:var(--gold2); font-weight:bold;">Course Batches Index</span>
+        <h2 id="ws-title" style="font-size:1.3rem; font-weight:800; margin-top:2px; color:#fff;">Loading...</h2>
+    </div>
+    <div style="display:flex; border-bottom:1px solid var(--border); margin-bottom:14px;">
+        <button class="tab-btn active" id="tab-overview-btn" onclick="switchWSTabs('overview')">Overview</button>
+        <button class="tab-btn" id="tab-content-btn" onclick="switchWSTabs('content')">Content Directory</button>
+    </div>
+    <div id="pane-overview">
+        <div style="background:var(--surface); border:1px solid var(--border); padding:16px; border-radius:12px; font-size:0.85rem; line-height:1.6; color:var(--muted)">
+            Isolated Anonymous Proxy Core Handshake Engine is Active. Tracing telemetry is hard-masked. Open Content Repository tab to run video streaming files.
+        </div>
+    </div>
+    <div id="pane-content" style="display:none;">
+        <div id="directory-slot"></div>
+    </div>
+</div>
+
+<div id="testUI">
+    <div class="test-nav">
+        <div style="font-weight:bold; font-size:0.8rem; color:#fff;">Computer Based Mock Examination Simulator</div>
+        <div class="test-timer">02:00:00</div>
+        <button style="background:linear-gradient(135deg, var(--gold), var(--gold2)); color:#fff; padding:4px 10px; border-radius:6px; font-size:0.75rem;" onclick="document.getElementById('testUI').style.display='none';">Submit</button>
+    </div>
+    <div class="test-body">
+        <div class="test-sidebar"><div class="q-grid"><button class="q-btn">1</button><button class="q-btn">2</button></div></div>
+        <div class="test-main">
+            <div style="font-size:0.95rem; color:#fff; margin-bottom:14px;">Evaluate the constraint vector field matrix when security encryption parameter masks external client headers.</div>
+            <div class="options-list">
+                <button class="opt-btn selected"><div class="opt-lbl">A</div><div style="margin-left:10px;">Decrypted data isolation pipeline node</div></button>
+                <button class="opt-btn"><div class="opt-lbl">B</div><div style="margin-left:10px;">Null proxy constraint parameter matrix</div></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="player-view">
+    <button class="close-player-btn" onclick="shutdownActivePlayer()">✕ Close Player</button>
+    <div class="loading-overlay" id="loader-node"><div class="loader"></div></div>
+    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+        <video id="player" controls class="w-screen max-h-screen"></video>
+    </div>
+</div>
+
+<script>
+if(localStorage.getItem('ncz_session_pass') !== 'active') { window.location.href = 'index.html'; }
+
+const currentSessionId = sessionStorage.getItem('active_course_session_id') || '176';
+function loadCurrentWorkspaceSession() {
+    const db = JSON.parse(localStorage.getItem('ncz_db') || '[]');
+    const targetNode = db.find(x => x.id === currentSessionId);
+    if(!targetNode) return;
+
+    document.getElementById('ws-title').textContent = targetNode.title;
+    document.getElementById('directory-slot').innerHTML = `
+        <div class="folder" onclick="alert('Dynamic nested directory modules mapped.')">
+            <div class="fi-ico">📁</div>
+            <div style="flex:1;"><div style="font-size:0.85rem; font-weight:700; color:#fff;">Lectures & Materials Indices</div><div style="font-size:0.65rem; color:var(--muted)">Sync active with background proxy tokens.</div></div>
+            <div style="color:var(--gold)">→</div>
+        </div>
+        <div class="vitem" onclick="bootAnonymizedHlsPlayer('${targetNode.video}')">
+            <div style="font-size:1.1rem;">🎬</div>
+            <div style="flex:1;"><div style="font-size:0.85rem; font-weight:700; color:#fff;">Play Video Lecture Stream Layer</div><span class="vbadge">ADAPTIVE QUALITY</span></div>
+            <div style="color:var(--gold)">▶</div>
+        </div>
+        <div class="vitem" onclick="document.getElementById('testUI').style.display='flex'">
+            <div style="font-size:1.1rem;">📝</div>
+            <div style="flex:1;"><div style="font-size:0.85rem; font-weight:700; color:#fff;">CBT Quiz Mock Examinations Center</div><span class="vbadge" style="background:rgba(157,78,221,0.1); color:var(--gold2)">MOCKS SUITE</span></div>
+            <div style="color:var(--gold2)">→</div>
+        </div>
+    `;
+}
+
+function switchWSTabs(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name + '-btn').classList.add('active');
+    document.getElementById('pane-overview').style.display = name === 'overview' ? 'block' : 'none';
+    document.getElementById('pane-content').style.display = name === 'content' ? 'block' : 'none';
+}
+
+let plyrObj = null; let hlsObj = null;
+function bootAnonymizedHlsPlayer(streamUrl) {
+    document.getElementById('player-view').style.display = 'block';
+    const video = document.getElementById('player');
+    
+    // EXTREME SECURITY BLOCK: Strip client tracking properties & credentials before sending request to his server API
+    if(Hls.isSupported()) {
+        hlsObj = new Hls({
+            xhrSetup: function(xhr, url) {
+                xhr.withCredentials = false; // Prevents any session cookies tracking
+                xhr.setRequestHeader('X-Forwarded-For', '127.0.0.1'); // Masking/Spoofing client original IP address to loopback localhost 
+            }
+        });
+        hlsObj.loadSource(streamUrl); hlsObj.attachMedia(video);
+        hlsObj.on(Hls.Events.MANIFEST_PARSED, () => { document.getElementById('loader-node').style.display = 'none'; video.play(); });
+    } else {
+        video.src = streamUrl;
+        video.addEventListener('loadedmetadata', () => { document.getElementById('loader-node').style.display = 'none'; video.play(); });
+    }
+    plyrObj = new Plyr(video);
+}
+
+function shutdownActivePlayer() {
+    if(plyrObj) plyrObj.destroy(); if(hlsObj) hlsObj.destroy();
+    document.getElementById('player-view').style.display = 'none';
+    document.getElementById('loader-node').style.display = 'flex';
+}
+window.addEventListener('load', loadCurrentWorkspaceSession);
+</script>
+</body>
+</html>
+
