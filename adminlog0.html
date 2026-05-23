@@ -6,12 +6,13 @@
 <title>Admin Dashboard · NexCoderZ</title>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root { --bg:#0a090f; --surface:#12101a; --border:#231f33; --gold:#ff3366; --gold2:#9d4edd; --muted:#7d72a1; }
 body { background:var(--bg); color:#dcd7ec; font-family:'Manrope',sans-serif; padding:20px 12px; }
-.panel { max-width:850px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; }
+.panel { max-width:850px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; display: none; }
+.panel.show-panel { display: block; }
 .inp { width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; margin-bottom:10px; outline:none; font-size:0.85rem; }
 .btn { padding:10px 20px; background:linear-gradient(135deg, var(--gold), var(--gold2)); border:none; border-radius:6px; color:#fff; font-weight:bold; font-size:0.85rem; cursor: pointer; }
 .table { width:100%; border-collapse:collapse; margin-top:16px; }
@@ -20,7 +21,8 @@ body { background:var(--bg); color:#dcd7ec; font-family:'Manrope',sans-serif; pa
 </style>
 </head>
 <body>
-<div class="panel">
+
+<div class="panel" id="adminMainPanel">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:16px;">
         <h2 style="font-family:'Space Mono', monospace; color:var(--gold); font-size:1.1rem;">NexCoderZ Master Control Center</h2>
         <button class="btn" style="background:#231f33" onclick="window.location.href='index.html'">Exit</button>
@@ -61,14 +63,34 @@ body { background:var(--bg); color:#dcd7ec; font-family:'Manrope',sans-serif; pa
 
 <script>
 const activePasswordKey = localStorage.getItem('ncz_master_password') || 'nexaX1977';
+
 function triggerAdminSecurityGateChallenge() {
     Swal.fire({
         title: 'Master Control Decryption Challenge',
-        input: 'password', inputPlaceholder: 'Enter security configuration credentials password...',
-        backgroundColor: '#12101a', color: '#fff', confirmButtonText: 'Decrypt Gate', showCancelButton: false
+        input: 'password', 
+        inputPlaceholder: 'Enter security configuration credentials password...',
+        backgroundColor: '#12101a', 
+        color: '#fff', 
+        confirmButtonText: 'Decrypt Gate', 
+        showCancelButton: false,
+        allowOutsideClick: false
     }).then((res) => {
-        if(res.value === activePasswordKey) { initAdminPortalWorkspacePanel(); }
-        else { window.location.href = 'index.html'; }
+        if(res.value === activePasswordKey) { 
+            // Fix Matrix: Ab sahi pass hone par panel block explicit load karega aur user page par redirect nahi karega
+            document.getElementById('adminMainPanel').classList.add('show-panel');
+            initAdminPortalWorkspacePanel(); 
+        }
+        else { 
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Signature Key',
+                text: 'Redirecting to hub gateway door.',
+                backgroundColor: '#12101a', color: '#fff',
+                timer: 1500, showConfirmButton: false
+            }).then(() => {
+                window.location.href = 'index.html'; 
+            });
+        }
     });
 }
 
@@ -103,8 +125,14 @@ function publishBatchNodeItem() {
     db.push({ id: String(Date.now()), title, img, video, cat: cat || 'General' });
     localStorage.setItem('ncz_db', JSON.stringify(db));
     renderInventoryTableNodes();
-    alert('Node published complete!');
+    alert('Node published compiled complete!');
 }
+
+// Custom Clear inputs form reset utilities
+document.getElementById('node-title').value = '';
+document.getElementById('node-img').value = '';
+document.getElementById('node-video').value = '';
+document.getElementById('node-cat').value = '';
 
 function purgeNodeIndex(idx) {
     let db = JSON.parse(localStorage.getItem('ncz_db') || '[]');
@@ -124,4 +152,3 @@ window.addEventListener('load', triggerAdminSecurityGateChallenge);
 </script>
 </body>
 </html>
-
