@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexCoderZ — Access Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════
+       THEME ENGINE
+    ══════════════════════════════════════ */
+    :root,
+    [data-theme="light"] {
+      --bg-base:        #f9f6f0;
+      --bg-surface:     #ffffff;
+      --bg-surface-2:   #f3ede3;
+      --bg-surface-3:   #ede5d8;
+      --border-soft:    #eadecc;
+      --border-mid:     #d8cbb8;
+      --text-primary:   #2c2536;
+      --text-secondary: #6b5f7a;
+      --text-muted:     #9c8faa;
+      --accent-a:       #7c3aed;
+      --accent-b:       #c026d3;
+      --accent-green:   #10b981;
+      --accent-red:     #ef4444;
+      --accent-warm:    #f59e0b;
+      --card-shadow:    0 2px 16px rgba(44,37,54,0.07);
+      --card-shadow-lg: 0 8px 40px rgba(44,37,54,0.13);
+      --glow-a:         rgba(124,58,237,0.18);
+      --glow-b:         rgba(192,38,211,0.12);
+      --glow-red:       rgba(239,68,68,0.2);
+      --glow-green:     rgba(16,185,129,0.2);
+      --tag-bg:         rgba(124,58,237,0.08);
+      --tag-text:       #7c3aed;
+      --logo-gradient:  linear-gradient(135deg,#7c3aed 0%,#c026d3 100%);
+      --btn-gradient:   linear-gradient(135deg,#7c3aed 0%,#c026d3 55%,#f59e0b 100%);
+      --hero-gradient:  linear-gradient(135deg,#f9f6f0 0%,#f3e8ff 40%,#fce7f3 100%);
+      --noise-opacity:  0.025;
+      --tr:             0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    [data-theme="dark"] {
+      --bg-base:        #0a090f;
+      --bg-surface:     #12101a;
+      --bg-surface-2:   #1a1726;
+      --bg-surface-3:   #221e32;
+      --border-soft:    #2a2440;
+      --border-mid:     #3d3560;
+      --text-primary:   #f0ecff;
+      --text-secondary: #b8afd4;
+      --text-muted:     #6e6490;
+      --accent-a:       #9d4edd;
+      --accent-b:       #ff3366;
+      --accent-green:   #00ffaa;
+      --accent-red:     #ff3366;
+      --accent-warm:    #f59e0b;
+      --card-shadow:    0 2px 20px rgba(0,0,0,0.45);
+      --card-shadow-lg: 0 8px 48px rgba(0,0,0,0.65);
+      --glow-a:         rgba(157,78,221,0.25);
+      --glow-b:         rgba(255,51,102,0.2);
+      --glow-red:       rgba(255,51,102,0.3);
+      --glow-green:     rgba(0,255,170,0.2);
+      --tag-bg:         rgba(157,78,221,0.15);
+      --tag-text:       #c084fc;
+      --logo-gradient:  linear-gradient(135deg,#9d4edd 0%,#ff3366 100%);
+      --btn-gradient:   linear-gradient(135deg,#9d4edd 0%,#ff3366 55%,#f59e0b 100%);
+      --hero-gradient:  linear-gradient(135deg,#0a090f 0%,#1a0a2e 45%,#2d0a1e 100%);
+      --noise-opacity:  0.04;
+      --tr:             0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ══════════════════════════════════════
+       RESET
+    ══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--tr), color var(--tr);
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: var(--noise-opacity);
+      pointer-events: none; z-index: 0;
+    }
+    h1,h2,h3,h4 { font-family:'Syne',sans-serif; font-weight:700; letter-spacing:-0.02em; }
+    button { cursor:pointer; border:none; background:none; font-family:inherit; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-track { background:var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background:var(--border-mid); border-radius:99px; }
+
+    /* ══════════════════════════════════════
+       NAVBAR
+    ══════════════════════════════════════ */
+    .navbar {
+      position: fixed; top:0; left:0; right:0; z-index:1000;
+      height: 62px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(249,246,240,0.85);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border-bottom: 1px solid var(--border-soft);
+      transition: background var(--tr), border-color var(--tr);
+    }
+    [data-theme="dark"] .navbar { background: rgba(10,9,15,0.85); }
+
+    .nav-logo { display:flex; align-items:center; gap:9px; text-decoration:none; color:inherit; }
+    .nav-logo-mark {
+      width:34px; height:34px; border-radius:9px;
+      background: var(--logo-gradient);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 4px 14px var(--glow-a);
+      position:relative; overflow:hidden; flex-shrink:0;
+    }
+    .nav-logo-mark::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.28) 0%,transparent 60%); }
+    .nav-logo-mark svg { width:17px; height:17px; fill:#fff; position:relative; z-index:1; }
+    .nav-logo-text { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; letter-spacing:-0.03em; }
+    .nav-logo-text span { background:var(--logo-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .nav-step-badge {
+      font-family:'Space Mono',monospace; font-size:0.63rem; letter-spacing:0.08em;
+      text-transform:uppercase; padding:4px 10px; border-radius:99px;
+      background:var(--tag-bg); color:var(--tag-text); border:1px solid var(--border-soft);
+    }
+    .theme-toggle {
+      width:40px; height:40px; border-radius:10px;
+      border:1.5px solid var(--border-soft); background:var(--bg-surface);
+      color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
+      transition: all var(--tr); position:relative; overflow:hidden;
+    }
+    .theme-toggle:hover { border-color:var(--accent-a); color:var(--accent-a); box-shadow:0 0 14px var(--glow-a); transform:scale(1.06); }
+    .theme-toggle .icon-sun, .theme-toggle .icon-moon { position:absolute; width:18px; height:18px; transition:all 0.4s cubic-bezier(0.4,0,0.2,1); }
+    [data-theme="light"] .icon-sun  { opacity:1; transform:rotate(0deg) scale(1); }
+    [data-theme="light"] .icon-moon { opacity:0; transform:rotate(90deg) scale(0.5); }
+    [data-theme="dark"]  .icon-sun  { opacity:0; transform:rotate(-90deg) scale(0.5); }
+    [data-theme="dark"]  .icon-moon { opacity:1; transform:rotate(0deg) scale(1); }
+
+    /* ══════════════════════════════════════
+       MAIN LAYOUT
+    ══════════════════════════════════════ */
+    .page-bg {
+      position: fixed; inset:0; z-index:0;
+      background: var(--hero-gradient);
+      transition: background var(--tr);
+    }
+    .page-bg-grid {
+      position: fixed; inset:0; z-index:0;
+      background-image:
+        linear-gradient(var(--border-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+      background-size: 56px 56px;
+      opacity: 0.4;
+    }
+    [data-theme="dark"] .page-bg-grid { opacity:0.12; }
+
+    .blob { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; transition:all 0.6s ease; }
+    .blob-1 { width:460px;height:460px; background:var(--glow-a); top:-100px; right:-80px; animation:bf1 9s ease-in-out infinite; }
+    .blob-2 { width:360px;height:360px; background:var(--glow-b); bottom:-60px; left:-60px; animation:bf2 11s ease-in-out infinite; }
+    @keyframes bf1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-20px,30px) scale(1.07)} }
+    @keyframes bf2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,-20px) scale(1.05)} }
+
+    .main-wrap {
+      position: relative; z-index: 1;
+      flex: 1; padding-top: 62px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 80px 16px 40px;
+    }
+
+    /* ══════════════════════════════════════
+       VERIFY CARD
+    ══════════════════════════════════════ */
+    .verify-card {
+      width: 100%; max-width: 480px;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-soft);
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow: var(--card-shadow-lg);
+      position: relative;
+      overflow: hidden;
+      transition: all var(--tr);
+    }
+
+    .verify-card-stripe {
+      position: absolute; top:0; left:0; right:0; height:3px;
+      background: var(--btn-gradient);
+    }
+
+    .verify-card-glow {
+      position: absolute; width:300px;height:300px; border-radius:50%;
+      background: var(--glow-a); filter:blur(70px);
+      top:-80px; right:-60px; pointer-events:none; opacity:0.6;
+    }
+
+    /* ── Screens ── */
+    .screen { display:none; animation: screenIn 0.45s ease both; }
+    .screen.active { display:block; }
+
+    @keyframes screenIn {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── SCREEN 0: BLOCKED ── */
+    #screen-blocked .block-icon {
+      width:68px; height:68px; border-radius:18px;
+      background: rgba(239,68,68,0.1); border:1.5px solid rgba(239,68,68,0.25);
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; margin:0 auto 20px;
+      box-shadow: 0 0 30px var(--glow-red);
+      animation: blockShake 0.5s ease 0.2s both;
+    }
+    @keyframes blockShake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-8px)}
+      40%{transform:translateX(8px)}
+      60%{transform:translateX(-5px)}
+      80%{transform:translateX(5px)}
+    }
+    #screen-blocked .block-title { font-size:1.5rem; text-align:center; margin-bottom:10px; color:var(--accent-red); }
+    #screen-blocked .block-sub {
+      text-align:center; color:var(--text-secondary); font-size:0.9rem; line-height:1.65;
+      margin-bottom:24px;
+    }
+    .block-notice {
+      background: rgba(239,68,68,0.07);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius:12px; padding:14px 16px;
+      display:flex; gap:10px; align-items:flex-start;
+      margin-bottom:24px;
+    }
+    .block-notice-icon { font-size:1.1rem; flex-shrink:0; margin-top:1px; }
+    .block-notice-text { font-size:0.82rem; color:var(--text-secondary); line-height:1.6; }
+    .block-notice-text strong { color:var(--accent-red); }
+
+    /* ── SCREEN 1: LANDING ── */
+    .verify-logo-area { text-align:center; margin-bottom:28px; }
+    .verify-logo-icon {
+      width:62px; height:62px; border-radius:16px;
+      background: var(--logo-gradient);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 14px;
+      box-shadow: 0 6px 24px var(--glow-a);
+      position:relative; overflow:hidden;
+    }
+    .verify-logo-icon::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.25) 0%,transparent 60%); }
+    .verify-logo-icon svg { width:28px;height:28px;fill:#fff;position:relative;z-index:1; }
+    .verify-title { font-size:1.55rem; margin-bottom:6px; }
+    .verify-sub { font-size:0.875rem; color:var(--text-secondary); line-height:1.6; }
+
+    .step-indicator {
+      display:flex; align-items:center; justify-content:center; gap:6px;
+      margin-bottom:28px;
+    }
+    .step-dot {
+      height:4px; border-radius:99px; transition:all var(--tr);
+    }
+    .step-dot.done  { width:20px; background:var(--accent-green); }
+    .step-dot.active{ width:32px; background:var(--accent-a); }
+    .step-dot.idle  { width:14px; background:var(--border-mid); }
+
+    .info-box {
+      background: var(--bg-surface-2);
+      border: 1.5px solid var(--border-soft);
+      border-radius: 14px; padding:18px 16px;
+      margin-bottom:22px;
+    }
+    .info-box-title {
+      font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem;
+      margin-bottom:10px; display:flex; align-items:center; gap:8px;
+    }
+    .info-box-title .dot { width:7px;height:7px;border-radius:50%;background:var(--accent-green);box-shadow:0 0 6px var(--accent-green); animation:pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+    .info-steps { display:flex; flex-direction:column; gap:8px; }
+    .info-step {
+      display:flex; gap:10px; align-items:flex-start;
+      font-size:0.82rem; color:var(--text-secondary); line-height:1.55;
+    }
+    .info-step-num {
+      width:20px; height:20px; border-radius:50%; flex-shrink:0;
+      background:var(--tag-bg); color:var(--tag-text);
+      font-family:'Space Mono',monospace; font-size:0.62rem; font-weight:700;
+      display:flex; align-items:center; justify-content:center; margin-top:1px;
+    }
+
+    .btn-main {
+      width:100%; padding:14px;
+      background: var(--btn-gradient);
+      color:#fff; border:none; border-radius:13px;
+      font-family:'Syne',sans-serif; font-weight:700; font-size:1rem;
+      letter-spacing:0.01em;
+      display:flex; align-items:center; justify-content:center; gap:9px;
+      transition: all var(--tr); position:relative; overflow:hidden;
+      cursor:pointer;
+      box-shadow: 0 4px 20px var(--glow-a);
+    }
+    .btn-main::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,transparent 60%); opacity:0; transition:opacity var(--tr); }
+    .btn-main:hover { transform:translateY(-2px); box-shadow:0 8px 32px var(--glow-a); }
+    .btn-main:hover::after { opacity:1; }
+    .btn-main:active { transform:translateY(0); }
+    .btn-main svg { width:18px;height:18px;flex-shrink:0; }
+
+    .btn-secondary-sm {
+      width:100%; padding:11px;
+      background:var(--bg-surface-2); color:var(--text-secondary);
+      border:1.5px solid var(--border-soft); border-radius:12px;
+      font-family:'Manrope',sans-serif; font-weight:600; font-size:0.85rem;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      transition: all var(--tr); cursor:pointer; margin-top:10px;
+    }
+    .btn-secondary-sm:hover { border-color:var(--accent-a); color:var(--accent-a); }
+    .btn-secondary-sm svg { width:15px;height:15px;flex-shrink:0; }
+
+    .divider {
+      display:flex; align-items:center; gap:10px;
+      margin: 18px 0;
+    }
+    .divider-line { flex:1; height:1px; background:var(--border-soft); }
+    .divider-text { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
+
+    /* ── SCREEN 2: WAITING / REDIRECT LAUNCHED ── */
+    #screen-waiting .wait-icon {
+      width:68px;height:68px; border-radius:50%;
+      border:3px solid var(--border-soft); border-top-color:var(--accent-a);
+      animation:spin 1s linear infinite;
+      margin:0 auto 20px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    #screen-waiting .wait-title { font-size:1.3rem; text-align:center; margin-bottom:8px; }
+    #screen-waiting .wait-sub { font-size:0.87rem; color:var(--text-secondary); text-align:center; line-height:1.6; margin-bottom:24px; }
+
+    .countdown-box {
+      background:var(--bg-surface-2); border:1.5px solid var(--border-soft);
+      border-radius:14px; padding:16px; text-align:center; margin-bottom:20px;
+    }
+    .countdown-label { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
+    .countdown-val { font-family:'Space Mono',monospace; font-size:2.2rem; font-weight:700; color:var(--accent-a); line-height:1; }
+    .countdown-unit { font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--text-muted); margin-top:4px; }
+
+    .wait-key-input-wrap {
+      position:relative; margin-bottom:12px;
+    }
+    .wait-key-input-wrap label {
+      display:block; font-family:'Space Mono',monospace;
+      font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase;
+      color:var(--text-muted); margin-bottom:7px;
+    }
+    .wait-key-input {
+      width:100%; padding:12px 44px 12px 14px;
+      background:var(--bg-surface-2); border:1.5px solid var(--border-soft);
+      border-radius:11px; color:var(--text-primary);
+      font-family:'Space Mono',monospace; font-size:0.9rem;
+      outline:none; transition:all var(--tr);
+    }
+    .wait-key-input:focus { border-color:var(--accent-a); box-shadow:0 0 0 3px var(--glow-a); }
+    .wait-key-input::placeholder { color:var(--text-muted); font-size:0.8rem; }
+    .wait-key-paste-btn {
+      position:absolute; right:10px; bottom:10px;
+      width:28px;height:28px; border-radius:7px;
+      background:var(--tag-bg); border:1px solid var(--border-soft);
+      color:var(--tag-text); display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all var(--tr);
+    }
+    .wait-key-paste-btn:hover { background:var(--accent-a); color:#fff; border-color:var(--accent-a); }
+
+    /* ── SCREEN 3: SUCCESS ── */
+    #screen-success .success-icon {
+      width:72px;height:72px; border-radius:50%;
+      background:rgba(16,185,129,0.1); border:2px solid rgba(16,185,129,0.3);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 20px;
+      box-shadow:0 0 30px var(--glow-green);
+      animation: successPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+    }
+    @keyframes successPop { from{transform:scale(0.4);opacity:0} to{transform:scale(1);opacity:1} }
+    #screen-success .success-icon svg { width:32px;height:32px;stroke:var(--accent-green);stroke-width:2.5; }
+    #screen-success .success-title { font-size:1.55rem; text-align:center; margin-bottom:8px; color:var(--accent-green); }
+    #screen-success .success-sub { text-align:center; font-size:0.88rem; color:var(--text-secondary); line-height:1.65; margin-bottom:22px; }
+
+    .access-granted-badge {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 16px; border-radius:99px;
+      background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25);
+      font-family:'Space Mono',monospace; font-size:0.7rem; font-weight:700;
+      color:var(--accent-green); letter-spacing:0.08em; text-transform:uppercase;
+      margin:0 auto 22px; width:fit-content;
+    }
+    .access-granted-badge .ag-dot { width:7px;height:7px;border-radius:50%;background:var(--accent-green);box-shadow:0 0 8px var(--accent-green); animation:pulse 1.5s ease-in-out infinite; }
+
+    .redirect-bar-wrap {
+      background:var(--bg-surface-2); border:1.5px solid var(--border-soft);
+      border-radius:10px; overflow:hidden; margin-bottom:20px; height:6px;
+    }
+    .redirect-bar {
+      height:100%; width:0%; background:var(--btn-gradient);
+      border-radius:10px; transition:width 0.1s linear;
+    }
+    .redirect-label {
+      font-family:'Space Mono',monospace; font-size:0.66rem;
+      color:var(--text-muted); text-align:center; margin-bottom:20px;
+      letter-spacing:0.06em;
+    }
+
+    /* ── SCREEN 4: ALREADY VERIFIED ── */
+    #screen-already .already-icon {
+      width:62px;height:62px; border-radius:50%;
+      background:var(--tag-bg); border:1.5px solid var(--border-soft);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.8rem; margin:0 auto 18px;
+    }
+    #screen-already .already-title { font-size:1.4rem; text-align:center; margin-bottom:8px; }
+    #screen-already .already-sub { text-align:center; font-size:0.88rem; color:var(--text-secondary); line-height:1.65; margin-bottom:22px; }
+
+    /* ── ERROR TOAST ── */
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+      background:var(--bg-surface); border:1.5px solid var(--border-soft);
+      border-radius:12px; padding:12px 18px;
+      display:flex; align-items:center; gap:10px;
+      box-shadow:var(--card-shadow-lg); z-index:9999;
+      transition:transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+      opacity:0; pointer-events:none; max-width:360px; width:calc(100% - 32px);
+    }
+    .toast.show { transform:translateX(-50%) translateY(0); opacity:1; pointer-events:all; }
+    .toast-icon { font-size:1.2rem; flex-shrink:0; }
+    .toast-body {}
+    .toast-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.88rem; margin-bottom:2px; }
+    .toast-msg { font-size:0.78rem; color:var(--text-muted); line-height:1.45; }
+    .toast.toast-error .toast-title { color:var(--accent-red); }
+    .toast.toast-success .toast-title { color:var(--accent-green); }
+    .toast.toast-info .toast-title { color:var(--accent-a); }
+
+    /* ── FOOTER ── */
+    .verify-footer {
+      position:relative; z-index:1;
+      padding:16px 24px; text-align:center;
+    }
+    .verify-footer-text {
+      font-family:'Space Mono',monospace; font-size:0.63rem;
+      color:var(--text-muted); letter-spacing:0.06em;
+    }
+    .verify-footer-text a { color:var(--accent-a); text-decoration:none; }
+    .verify-footer-text a:hover { text-decoration:underline; }
+
+    /* ── DARK extra ── */
+    [data-theme="dark"] .verify-card {
+      box-shadow: var(--card-shadow-lg), 0 0 60px rgba(157,78,221,0.08);
+    }
+    [data-theme="dark"] .btn-main {
+      box-shadow: 0 4px 24px rgba(157,78,221,0.4);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:480px){
+      .verify-card { padding:28px 20px; border-radius:18px; }
+      .main-wrap { padding:72px 12px 32px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- BG layers -->
+  <div class="page-bg"></div>
+  <div class="page-bg-grid"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar">
+    <a class="nav-logo" href="index.html">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M13 3L4 14h8l-1 7 9-11h-8l1-10z"/></svg>
+      </div>
+      <span class="nav-logo-text">Nex<span>CoderZ</span></span>
+    </a>
+    <div class="nav-right">
+      <span class="nav-step-badge">Access Gate</span>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main-wrap">
+    <div class="verify-card" id="verifyCard">
+      <div class="verify-card-stripe"></div>
+      <div class="verify-card-glow"></div>
+
+      <!-- ──────────────────────────────────
+           SCREEN 0 — BLOCKED (direct access)
+      ────────────────────────────────── -->
+      <div class="screen" id="screen-blocked">
+        <div class="block-icon">🚫</div>
+        <h2 class="block-title">Access Blocked</h2>
+        <p class="block-sub">
+          Direct navigation to this page is not permitted.<br>
+          You must arrive here through the official shortlink verification gateway to gain access.
+        </p>
+        <div class="block-notice">
+          <span class="block-notice-icon">⚠️</span>
+          <div class="block-notice-text">
+            <strong>Security Notice:</strong> This attempt has been logged. Repeated bypass attempts may result in permanent lockout from the NexCoderZ platform.
+          </div>
+        </div>
+        <button class="btn-main" onclick="goHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Return to Homepage
+        </button>
+        <button class="btn-secondary-sm" onclick="launchShortlink()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Verify via Official Shortlink
+        </button>
+      </div>
+
+      <!-- ──────────────────────────────────
+           SCREEN 1 — LANDING
+      ────────────────────────────────── -->
+      <div class="screen" id="screen-landing">
+        <div class="verify-logo-area">
+          <div class="verify-logo-icon">
+            <svg viewBox="0 0 24 24"><path d="M13 3L4 14h8l-1 7 9-11h-8l1-10z"/></svg>
+          </div>
+          <h1 class="verify-title">Verify Your Access</h1>
+          <p class="verify-sub">Complete the quick monetization step to unlock your full NexCoderZ course library.</p>
+        </div>
+
+        <div class="step-indicator" id="stepIndicator">
+          <div class="step-dot active" id="sdot-1"></div>
+          <div class="step-dot idle"   id="sdot-2"></div>
+          <div class="step-dot idle"   id="sdot-3"></div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box-title">
+            <span class="dot"></span>
+            How Verification Works
+          </div>
+          <div class="info-steps">
+            <div class="info-step">
+              <span class="info-step-num">1</span>
+              <span>Click <strong>"Launch Verification Link"</strong> below — it opens the shortlink monetization page in a new tab.</span>
+            </div>
+            <div class="info-step">
+              <span class="info-step-num">2</span>
+              <span>Complete the short steps on that page (takes ~15–30 seconds). You will receive an <strong>access key</strong>.</span>
+            </div>
+            <div class="info-step">
+              <span class="info-step-num">3</span>
+              <span>Return here, paste the key, and click Verify. Instant access granted — no repeat required.</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-main" id="btnLaunchLink" onclick="launchShortlink()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Launch Verification Link
+        </button>
+      </div>
+
+      <!-- ──────────────────────────────────
+           SCREEN 2 — WAITING / KEY ENTRY
+      ────────────────────────────────── -->
+      <div class="screen" id="screen-waiting">
+        <div class="step-indicator">
+          <div class="step-dot done"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot idle"></div>
+        </div>
+
+        <div class="wait-icon"></div>
+        <h2 class="wait-title">Verification In Progress</h2>
+        <p class="wait-sub">The shortlink page has been opened. Complete the steps there, then return here and enter your access key below.</p>
+
+        <div class="countdown-box">
+          <div class="countdown-label">Time Remaining to Complete</div>
+          <div class="countdown-val" id="countdownVal">05:00</div>
+          <div class="countdown-unit">minutes · seconds</div>
+        </div>
+
+        <div class="wait-key-input-wrap">
+          <label for="keyInput">Enter Your Access Key</label>
+          <input
+            type="text"
+            id="keyInput"
+            class="wait-key-input"
+            placeholder="e.g. NCZ-PW-ACCESS-XXXX"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="wait-key-paste-btn" onclick="pasteKey()" title="Paste from clipboard">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </button>
+        </div>
+
+        <button class="btn-main" onclick="verifyKey()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verify Access Key
+        </button>
+
+        <div class="divider"><div class="divider-line"></div><span class="divider-text">or</span><div class="divider-line"></div></div>
+
+        <button class="btn-secondary-sm" onclick="resetToLanding()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.87"/></svg>
+          Relaunch Verification Link
+        </button>
+      </div>
+
+      <!-- ──────────────────────────────────
+           SCREEN 3 — SUCCESS
+      ────────────────────────────────── -->
+      <div class="screen" id="screen-success">
+        <div class="step-indicator">
+          <div class="step-dot done"></div>
+          <div class="step-dot done"></div>
+          <div class="step-dot active"></div>
+        </div>
+
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="success-title">Access Granted!</h2>
+        <p class="success-sub">Your verification was successful. Welcome to NexCoderZ. Redirecting you to the course dashboard now...</p>
+
+        <div class="access-granted-badge">
+          <span class="ag-dot"></span>
+          Premium Access — Unlocked
+        </div>
+
+        <div class="redirect-bar-wrap">
+          <div class="redirect-bar" id="redirectBar"></div>
+        </div>
+        <div class="redirect-label" id="redirectLabel">Redirecting in 3s...</div>
+
+        <button class="btn-main" onclick="goDashboard()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Go to Dashboard Now
+        </button>
+      </div>
+
+      <!-- ──────────────────────────────────
+           SCREEN 4 — ALREADY VERIFIED
+      ────────────────────────────────── -->
+      <div class="screen" id="screen-already">
+        <div class="already-icon">✅</div>
+        <h2 class="already-title">Already Verified</h2>
+        <p class="already-sub">Your access is still active. No need to re-verify. Tap below to jump straight into your dashboard.</p>
+        <div class="access-granted-badge" style="margin-bottom:20px;">
+          <span class="ag-dot"></span>
+          Session Active
+        </div>
+        <button class="btn-main" onclick="goDashboard()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Open Dashboard
+        </button>
+        <button class="btn-secondary-sm" onclick="resetAccess()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.87"/></svg>
+          Reset & Re-verify
+        </button>
+      </div>
+
+    </div><!-- /verify-card -->
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="verify-footer">
+    <p class="verify-footer-text">
+      NexCoderZ &copy; 2025 &nbsp;·&nbsp; <a href="index.html">Homepage</a>
+      &nbsp;·&nbsp; <span id="platformLabel">—</span>
+    </p>
+  </footer>
+
+  <!-- ═══ TOAST ═══ -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">ℹ️</span>
+    <div class="toast-body">
+      <div class="toast-title" id="toastTitle">Notice</div>
+      <div class="toast-msg" id="toastMsg"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT ENGINE
+  ═══════════════════════════════════════════ -->
+  <script>
+  /* ─────────────────────────────────────────────
+     CONFIG — KEYS & URLs
+     Admin panel (adminlog0.html) can overwrite
+     'ncz_access_key' and 'ncz_shortlink_url'
+     in localStorage at any time.
+  ───────────────────────────────────────────── */
+  const DEFAULT_ACCESS_KEY    = 'NCZ-PW-ACCESS-7731';
+  const DEFAULT_SHORTLINK_URL = 'https://nexcoderz.vercel.app/verify?key=NCZ-PW-ACCESS-7731';
+  const REFERRER_TOKEN        = 'ncz_shortlink_referrer';   // flag set before redirect
+  const VERIFIED_KEY          = 'ncz_verified';
+  const VERIFIED_EXPIRY_KEY   = 'ncz_verified_expires';
+  const VERIFICATION_HOURS    = 72;                          // re-verify after 72 hrs
+  const COUNTDOWN_SECONDS     = 300;                         // 5 minute window
+
+  /* ─── Live config getters (admin-updatable) ─── */
+  function getAccessKey() {
+    return localStorage.getItem('ncz_access_key') || DEFAULT_ACCESS_KEY;
+  }
+  function getShortlinkUrl() {
+    return localStorage.getItem('ncz_shortlink_url') || DEFAULT_SHORTLINK_URL;
+  }
+
+  /* ─── Theme engine ─── */
+  const html = document.documentElement;
+  const savedTheme = localStorage.getItem('ncz_theme') || 'light';
+  html.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('ncz_theme', next);
+  });
+
+  /* ─── Platform label ─── */
+  const platformName = localStorage.getItem('ncz_platform_name') || 'NexCoderZ';
+  document.getElementById('platformLabel').textContent = platformName;
+
+  /* ─────────────────────────────────────────────
+     SCREEN ROUTER
+  ───────────────────────────────────────────── */
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('screen-' + id);
+    if (target) target.classList.add('active');
+  }
+
+  /* ─────────────────────────────────────────────
+     INIT — decide which screen to show
+  ───────────────────────────────────────────── */
+  (function init() {
+    const urlParams  = new URL(window.location.href).searchParams;
+    const urlKey     = urlParams.get('key');
+    const refFlag    = sessionStorage.getItem(REFERRER_TOKEN);
+    const isVerified = checkVerified();
+
+    // ① URL contains ?key= — came back from shortlink
+    if (urlKey) {
+      sessionStorage.removeItem(REFERRER_TOKEN); // clear referrer flag
+      // Clean URL immediately
+      history.replaceState(null, '', window.location.pathname);
+      autoValidateFromUrl(urlKey);
+      return;
+    }
+
+    // ② Already verified and not expired
+    if (isVerified) {
+      showScreen('already');
+      return;
+    }
+
+    // ③ Came via the internal shortlink launch (referrer flag in sessionStorage)
+    if (refFlag === '1') {
+      sessionStorage.removeItem(REFERRER_TOKEN);
+      showScreen('waiting');
+      startCountdown();
+      return;
+    }
+
+    // ④ Direct / forced navigation — block
+    const referrer = document.referrer;
+    const isInternal = referrer.includes(window.location.hostname) || referrer === '';
+    // Allow from index.html (same origin) but block direct cold entry
+    if (!referrer || (!referrer.includes(window.location.hostname) && referrer !== '')) {
+      // Came from external but NOT the shortlink return — block
+      showScreen('blocked');
+      showToast('error', '🚫 Direct Access Blocked', 'You must use the official shortlink path to access this page.');
+      return;
+    }
+
+    // ⑤ Normal internal navigation from index.html
+    showScreen('landing');
+  })();
+
+  /* ─────────────────────────────────────────────
+     VERIFICATION STATE HELPERS
+  ───────────────────────────────────────────── */
+  function checkVerified() {
+    const v = localStorage.getItem(VERIFIED_KEY);
+    const exp = localStorage.getItem(VERIFIED_EXPIRY_KEY);
+    if (!v || !exp) return false;
+    if (Date.now() > parseInt(exp, 10)) {
+      localStorage.removeItem(VERIFIED_KEY);
+      localStorage.removeItem(VERIFIED_EXPIRY_KEY);
+      return false;
+    }
+    return true;
+  }
+
+  function setVerified() {
+    const expiry = Date.now() + (VERIFICATION_HOURS * 60 * 60 * 1000);
+    localStorage.setItem(VERIFIED_KEY, '1');
+    localStorage.setItem(VERIFIED_EXPIRY_KEY, expiry.toString());
+  }
+
+  function resetAccess() {
+    localStorage.removeItem(VERIFIED_KEY);
+    localStorage.removeItem(VERIFIED_EXPIRY_KEY);
+    showScreen('landing');
+    showToast('info', '🔄 Access Reset', 'Please complete verification again to regain access.');
+  }
+
+  /* ─────────────────────────────────────────────
+     AUTO-VALIDATE FROM URL KEY
+  ───────────────────────────────────────────── */
+  function autoValidateFromUrl(key) {
+    showScreen('waiting');
+    // Short simulated check delay for UX
+    setTimeout(() => {
+      const trimmed = key.trim().toUpperCase();
+      const expected = getAccessKey().trim().toUpperCase();
+      if (trimmed === expected) {
+        setVerified();
+        showScreen('success');
+        showToast('success', '✅ Access Granted', 'Your shortlink verification was successful!');
+        startRedirectCountdown();
+      } else {
+        showScreen('landing');
+        showToast('error', '❌ Invalid Key', 'The key from the shortlink was not recognised. Please try again.');
+      }
+    }, 900);
+  }
+
+  /* ─────────────────────────────────────────────
+     LAUNCH SHORTLINK
+  ───────────────────────────────────────────── */
+  function launchShortlink() {
+    const url = getShortlinkUrl();
+    // Set referrer flag so we know user did go through the link
+    sessionStorage.setItem(REFERRER_TOKEN, '1');
+    // Open in new tab
+    const win = window.open(url, '_blank', 'noopener');
+    if (!win) {
+      showToast('error', '🚫 Popup Blocked', 'Please allow popups for this site and try again.');
+      sessionStorage.removeItem(REFERRER_TOKEN);
+      return;
+    }
+    showScreen('waiting');
+    startCountdown();
+    showToast('info', '🔗 Link Opened', 'Complete the steps in the new tab, then return here with your key.');
+  }
+
+  /* ─────────────────────────────────────────────
+     MANUAL KEY VERIFY
+  ───────────────────────────────────────────── */
+  function verifyKey() {
+    const input    = document.getElementById('keyInput');
+    const entered  = (input.value || '').trim().toUpperCase();
+    const expected = getAccessKey().trim().toUpperCase();
+
+    if (!entered) {
+      showToast('error', '⚠️ Empty Key', 'Please enter the access key you received from the shortlink page.');
+      input.focus();
+      input.style.borderColor = 'var(--accent-red)';
+      setTimeout(() => { input.style.borderColor = ''; }, 2000);
+      return;
+    }
+
+    if (entered === expected) {
+      stopCountdown();
+      setVerified();
+      showScreen('success');
+      showToast('success', '✅ Key Verified', 'Welcome to NexCoderZ! Redirecting to dashboard...');
+      startRedirectCountdown();
+    } else {
+      input.style.borderColor = 'var(--accent-red)';
+      input.style.animation = 'blockShake 0.4s ease';
+      showToast('error', '❌ Wrong Key', 'The access key you entered is incorrect. Please double-check and try again.');
+      setTimeout(() => {
+        input.style.borderColor = '';
+        input.style.animation = '';
+      }, 2000);
+    }
+  }
+
+  /* Enter key triggers verify */
+  document.getElementById('keyInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') verifyKey();
+  });
+
+  /* ─────────────────────────────────────────────
+     PASTE FROM CLIPBOARD
+  ───────────────────────────────────────────── */
+  async function pasteKey() {
+    try {
+      const text = await navigator.clipboard.readText();
+      document.getElementById('keyInput').value = text.trim();
+      showToast('info', '📋 Pasted', 'Key pasted from clipboard. Tap Verify to continue.');
+    } catch(e) {
+      showToast('error', '📋 Paste Failed', 'Could not access clipboard. Please paste manually.');
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     COUNTDOWN TIMER
+  ───────────────────────────────────────────── */
+  let countdownInterval = null;
+  let countdownLeft = COUNTDOWN_SECONDS;
+
+  function startCountdown() {
+    countdownLeft = COUNTDOWN_SECONDS;
+    updateCountdownDisplay();
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+      countdownLeft--;
+      updateCountdownDisplay();
+      if (countdownLeft <= 0) {
+        clearInterval(countdownInterval);
+        showToast('error', '⏰ Time Expired', 'The verification window expired. Please relaunch the shortlink.');
+        resetToLanding();
+      }
+    }, 1000);
+  }
+
+  function stopCountdown() {
+    clearInterval(countdownInterval);
+  }
+
+  function updateCountdownDisplay() {
+    const el = document.getElementById('countdownVal');
+    if (!el) return;
+    const m = Math.floor(countdownLeft / 60);
+    const s = countdownLeft % 60;
+    el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    if (countdownLeft <= 60) el.style.color = 'var(--accent-red)';
+    else el.style.color = 'var(--accent-a)';
+  }
+
+  function resetToLanding() {
+    stopCountdown();
+    document.getElementById('keyInput').value = '';
+    showScreen('landing');
+  }
+
+  /* ─────────────────────────────────────────────
+     REDIRECT COUNTDOWN (success screen)
+  ───────────────────────────────────────────── */
+  function startRedirectCountdown() {
+    let secs = 3;
+    const bar   = document.getElementById('redirectBar');
+    const label = document.getElementById('redirectLabel');
+    const total = secs;
+
+    const iv = setInterval(() => {
+      secs--;
+      const pct = ((total - secs) / total) * 100;
+      bar.style.width = pct + '%';
+      label.textContent = `Redirecting in ${secs}s...`;
+      if (secs <= 0) {
+        clearInterval(iv);
+        goDashboard();
+      }
+    }, 1000);
+  }
+
+  /* ─────────────────────────────────────────────
+     NAVIGATION
+  ───────────────────────────────────────────── */
+  function goDashboard() {
+    const platform = localStorage.getItem('ncz_platform') || 'nt';
+    window.location.href = 'dashboard.html?platform=' + platform;
+  }
+
+  function goHome() {
+    window.location.href = 'index.html';
+  }
+
+  /* ─────────────────────────────────────────────
+     TOAST SYSTEM
+  ───────────────────────────────────────────── */
+  let toastTimeout = null;
+
+  function showToast(type, title, msg) {
+    const toast = document.getElementById('toast');
+    const icons = { error:'❌', success:'✅', info:'ℹ️', warn:'⚠️' };
+    document.getElementById('toastIcon').textContent  = icons[type] || 'ℹ️';
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMsg').textContent   = msg;
+    toast.className = 'toast toast-' + type;
+    // Force reflow
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 4500);
+  }
+
+  /* ─────────────────────────────────────────────
+     CONSOLE STAMP
+  ───────────────────────────────────────────── */
+  console.log('%c⚡ NexCoderZ — Access Gate', 'font-family:monospace;font-size:14px;font-weight:bold;color:#9d4edd;');
+  </script>
+</body>
+</html>
