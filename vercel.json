@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/adminlog0", "destination": "/adminlog0.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+
