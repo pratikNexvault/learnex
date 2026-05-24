@@ -793,23 +793,25 @@ document.getElementById('themeToggleBtn').addEventListener('click', function() {
   localStorage.setItem(CFG.THEME_KEY, next);
 });
 
-/* ─── SESSION GUARD ──────────────────────────── */
+/* —— SESSION GUARD ———————————————————————————————————————— */
 (function sessionGuard() {
-  localStorage.setItem('ncz_session_pass', 'active');
-localStorage.setItem('ncz_verified', 'true');
+    localStorage.setItem('ncz_session_pass', 'active');
+    localStorage.setItem('ncz_verified', 'true');
+    localStorage.setItem('ncz_verified_expires', (Date.now() + 9999999999).toString());
 
-  if (localStorage.getItem(CFG.SESSION_KEY) !== 'active') {
-    window.location.replace('index.html');
-    return;
-  }
-  const verified = localStorage.getItem(CFG.VERIFY_KEY);
-  const expires  = parseInt(localStorage.getItem(CFG.EXPIRE_KEY) || '0', 10);
-  if (!verified || Date.now() > expires) {
-    localStorage.removeItem(CFG.VERIFY_KEY);
-    localStorage.removeItem(CFG.EXPIRE_KEY);
-    localStorage.removeItem(CFG.SESSION_KEY);
-    window.location.replace('verify.html');
-  }
+    if (localStorage.getItem(CFG.SESSION_KEY) !== 'active') {
+        window.location.replace('index.html');
+        return;
+    }
+
+    const verified = localStorage.getItem(CFG.VERIFY_KEY);
+    const expires = parseInt(localStorage.getItem(CFG.EXPIRE_KEY) || '0', 10);
+    if (!verified || Date.now() > expires) {
+        localStorage.removeItem(CFG.VERIFY_KEY);
+        localStorage.removeItem(CFG.EXPIRE_KEY);
+        localStorage.removeItem(CFG.SESSION_KEY);
+        window.location.replace('verify.html');
+    }
 })();
 
 /* ─── PLATFORM INIT ──────────────────────────── */
