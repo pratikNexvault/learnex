@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEARNEX — Operator Console</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void:        #090b0f;
+      --bg-deep:        #0d1117;
+      --bg-card:        #111820;
+      --bg-card-hover:  #151e28;
+      --border-dim:     #1a2535;
+      --border-glow:    #00f5d4;
+      --cyan:           #00f5d4;
+      --cyan-dim:       rgba(0,245,212,0.12);
+      --cyan-mid:       rgba(0,245,212,0.35);
+      --cyan-glow:      0 0 18px rgba(0,245,212,0.45), 0 0 40px rgba(0,245,212,0.15);
+      --red:            #ff3b5c;
+      --red-dim:        rgba(255,59,92,0.12);
+      --red-glow:       0 0 18px rgba(255,59,92,0.55);
+      --yellow:         #f5c518;
+      --green:          #39d98a;
+      --text-primary:   #e2eaf4;
+      --text-secondary: #6b8199;
+      --text-muted:     #364859;
+      --font-display:   'Orbitron', monospace;
+      --font-ui:        'Rajdhani', sans-serif;
+      --font-mono:      'Share Tech Mono', monospace;
+      --radius:         6px;
+      --radius-lg:      12px;
+      --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── SCANLINE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.4;
+    }
+
+    /* ── AMBIENT GRID ── */
+    .grid-bg {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,212,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,212,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════════════
+       AUTH MODAL
+    ══════════════════════════════════════ */
+    #auth-gate {
+      position: fixed; inset: 0;
+      background: rgba(5,8,12,0.97);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.4s ease;
+    }
+
+    #auth-gate.hidden { display: none; }
+
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideUp { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes pulse-border {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,245,212,0); border-color: var(--border-dim); }
+      50%      { box-shadow: var(--cyan-glow); border-color: var(--cyan); }
+    }
+    @keyframes glitch {
+      0%   { clip-path: inset(0 0 100% 0); transform: translateX(0); }
+      10%  { clip-path: inset(10% 0 60% 0); transform: translateX(-2px); }
+      20%  { clip-path: inset(50% 0 20% 0); transform: translateX(2px); }
+      30%  { clip-path: inset(20% 0 70% 0); transform: translateX(0); }
+      40%  { clip-path: inset(80% 0 5% 0);  transform: translateX(-1px); }
+      50%  { clip-path: inset(0 0 0 0);     transform: translateX(0); }
+      100% { clip-path: inset(0 0 0 0);     transform: translateX(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes sweep {
+      0%   { transform: scaleX(0); transform-origin: left; }
+      50%  { transform: scaleX(1); transform-origin: left; }
+      50.001% { transform: scaleX(1); transform-origin: right; }
+      100% { transform: scaleX(0); transform-origin: right; }
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      padding: 52px 48px;
+      width: min(480px, 92vw);
+      position: relative;
+      animation: slideUp 0.5s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .auth-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 10%; right: 10%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      border-radius: 999px;
+    }
+
+    .auth-corner {
+      position: absolute;
+      width: 16px; height: 16px;
+      border-color: var(--cyan);
+      border-style: solid;
+    }
+    .auth-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-radius: 2px 0 0 0; }
+    .auth-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; border-radius: 0 2px 0 0; }
+    .auth-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; border-radius: 0 0 0 2px; }
+    .auth-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-radius: 0 0 2px 0; }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .auth-logo-text {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
+      text-shadow: var(--cyan-glow);
+      display: block;
+    }
+
+    .auth-logo-sub {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-top: 6px;
+      display: block;
+    }
+
+    .auth-separator {
+      width: 48px; height: 1px;
+      background: var(--cyan);
+      margin: 0 auto 28px;
+      box-shadow: var(--cyan-glow);
+    }
+
+    .auth-field {
+      margin-bottom: 20px;
+    }
+
+    .auth-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .auth-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px var(--cyan-dim), var(--cyan-glow);
+    }
+
+    .auth-input::placeholder { color: var(--text-muted); }
+
+    .auth-error {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--red);
+      text-align: center;
+      margin-top: 14px;
+      min-height: 18px;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .auth-error-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      animation: blink 1s infinite;
+      flex-shrink: 0;
+    }
+
+    .btn-auth {
+      width: 100%;
+      margin-top: 28px;
+      padding: 15px;
+      background: transparent;
+      border: 1px solid var(--cyan);
+      border-radius: var(--radius);
+      color: var(--cyan);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all var(--transition);
+    }
+
+    .btn-auth::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--cyan);
+      transform: translateX(-101%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .btn-auth:hover::before { transform: translateX(0); }
+    .btn-auth:hover { color: var(--bg-void); box-shadow: var(--cyan-glow); }
+    .btn-auth span { position: relative; z-index: 1; }
+
+    .auth-attempt-counter {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 16px;
+      letter-spacing: 0.1em;
+    }
+
+    /* ══════════════════════════════════════
+       APP SHELL
+    ══════════════════════════════════════ */
+    #app {
+      position: relative;
+      z-index: 1;
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    #app.active { display: flex; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0;
+      background: rgba(9,11,15,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-dim);
+      z-index: 100;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--cyan) 30%, var(--cyan) 70%, transparent 100%);
+      opacity: 0.25;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-icon {
+      width: 36px; height: 36px;
+      border: 1px solid var(--cyan);
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--cyan-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg { width: 18px; height: 18px; fill: var(--cyan); }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--cyan);
+      text-shadow: 0 0 16px rgba(0,245,212,0.4);
+    }
+
+    .brand-divider { width: 1px; height: 24px; background: var(--border-dim); }
+
+    .brand-console {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 2s infinite;
+    }
+
+    .status-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+    .topbar-clock {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--cyan);
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+    }
+
+    .btn-logout {
+      background: var(--red-dim);
+      border: 1px solid rgba(255,59,92,0.3);
+      border-radius: var(--radius);
+      color: var(--red);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-logout:hover {
+      background: var(--red);
+      color: white;
+      box-shadow: var(--red-glow);
+    }
+
+    /* ── OPERATOR STRIP ── */
+    .operator-strip {
+      background: rgba(0,245,212,0.04);
+      border-bottom: 1px solid rgba(0,245,212,0.08);
+      padding: 8px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .op-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .op-value {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+    }
+
+    .op-pipe { color: var(--border-dim); }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      flex: 1;
+      padding: 32px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    /* ── PANEL CARD ── */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      position: relative;
+    }
+
+    .panel:hover {
+      border-color: rgba(0,245,212,0.2);
+      box-shadow: 0 0 0 1px rgba(0,245,212,0.05), 0 16px 48px rgba(0,0,0,0.4);
+    }
+
+    .panel-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .panel-header::before {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 24px;
+      width: 40px; height: 2px;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .panel-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius);
+      background: var(--cyan-dim);
+      border: 1px solid rgba(0,245,212,0.2);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .panel-icon svg { width: 15px; height: 15px; stroke: var(--cyan); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+
+    .panel-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      margin-top: 2px;
+    }
+
+    .panel-badge {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid;
+      text-transform: uppercase;
+    }
+
+    .badge-active { color: var(--green); border-color: rgba(57,217,138,0.3); background: rgba(57,217,138,0.08); }
+    .badge-warn   { color: var(--yellow); border-color: rgba(245,197,24,0.3); background: rgba(245,197,24,0.08); }
+    .badge-idle   { color: var(--text-muted); border-color: var(--border-dim); background: transparent; }
+
+    .panel-body { padding: 24px; }
+
+    /* ── FORM ELEMENTS ── */
+    .field-group { margin-bottom: 20px; }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .field-label-text {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .field-hint {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-muted);
+    }
+
+    .cyber-input {
+      width: 100%;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      outline: none;
+      transition: all var(--transition);
+    }
+
+    .cyber-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px var(--cyan-dim);
+    }
+
+    .cyber-input::placeholder { color: var(--text-muted); font-size: 0.75rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-family: var(--font-display);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all var(--transition);
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .btn-primary {
+      background: var(--cyan-dim);
+      border-color: rgba(0,245,212,0.4);
+      color: var(--cyan);
+    }
+
+    .btn-primary:hover {
+      background: var(--cyan);
+      color: var(--bg-void);
+      box-shadow: var(--cyan-glow);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border-dim);
+      color: var(--text-secondary);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .btn-danger {
+      background: var(--red-dim);
+      border-color: rgba(255,59,92,0.4);
+      color: var(--red);
+      width: 100%;
+      padding: 16px;
+      font-size: 0.75rem;
+    }
+
+    .btn-danger:hover {
+      background: var(--red);
+      color: white;
+      box-shadow: var(--red-glow);
+    }
+
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── VALIDATION MONITOR ── */
+    .validation-monitor {
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+
+    .monitor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .monitor-title {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .monitor-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+    }
+
+    .monitor-rows { display: flex; flex-direction: column; gap: 8px; }
+
+    .monitor-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-card);
+      border-radius: 4px;
+      border: 1px solid var(--border-dim);
+    }
+
+    .monitor-key {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    .monitor-val {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--cyan);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .monitor-val.empty { color: var(--text-muted); font-style: italic; }
+
+    .sweep-bar {
+      height: 2px;
+      background: var(--cyan);
+      border-radius: 1px;
+      margin-top: 12px;
+      transform-origin: left;
+      animation: sweep 2.5s ease-in-out infinite;
+      box-shadow: var(--cyan-glow);
+      opacity: 0.6;
+    }
+
+    /* ── TOGGLE SWITCH ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      transition: border-color var(--transition);
+    }
+
+    .toggle-row.active { border-color: rgba(0,245,212,0.25); }
+
+    .toggle-info { display: flex; flex-direction: column; gap: 3px; }
+
+    .toggle-name {
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .toggle-desc {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0; height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0,245,212,0.25);
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    /* ── POPUP STATUS DISPLAY ── */
+    .popup-preview {
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-top: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .popup-preview-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .popup-preview-content {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .popup-preview-link {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--cyan);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── DATA TABLE ── */
+    .table-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .table-search {
+      flex: 1;
+      position: relative;
+    }
+
+    .table-search-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      width: 14px; height: 14px;
+      stroke: var(--text-muted);
+      fill: none; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .table-search input {
+      width: 100%;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 9px 12px 9px 36px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      outline: none;
+      transition: all var(--transition);
+    }
+
+    .table-search input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px var(--cyan-dim);
+    }
+
+    .table-search input::placeholder { color: var(--text-muted); }
+
+    .table-count {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 9px 12px;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(26,37,53,0.5);
+      vertical-align: middle;
+      transition: background var(--transition);
+    }
+
+    .data-table tr:hover td { background: rgba(0,245,212,0.025); }
+
+    .td-key {
+      color: var(--cyan);
+      font-size: 0.68rem;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .td-value {
+      color: var(--text-secondary);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .td-type {
+      color: var(--text-muted);
+      font-size: 0.6rem;
+    }
+
+    .td-actions { text-align: right; }
+
+    .btn-table-del {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-table-del:hover {
+      border-color: rgba(255,59,92,0.4);
+      color: var(--red);
+      background: var(--red-dim);
+    }
+
+    .table-empty {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-deep);
+    }
+
+    /* ── DETONATION PANEL ── */
+    .detonation-zone {
+      border: 1px solid rgba(255,59,92,0.2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .detonation-zone .panel-header {
+      background: rgba(255,59,92,0.04);
+      border-color: rgba(255,59,92,0.15);
+    }
+
+    .detonation-zone .panel-header::before {
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+    }
+
+    .detonation-zone .panel-icon {
+      background: var(--red-dim);
+      border-color: rgba(255,59,92,0.3);
+    }
+
+    .detonation-zone .panel-icon svg { stroke: var(--red); }
+
+    .threat-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .threat-card {
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .threat-num {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--red);
+      text-shadow: 0 0 12px rgba(255,59,92,0.5);
+      line-height: 1;
+      display: block;
+      animation: countUp 0.5s ease;
+    }
+
+    .threat-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 6px;
+      display: block;
+    }
+
+    .detonation-warning {
+      background: rgba(255,59,92,0.06);
+      border: 1px solid rgba(255,59,92,0.2);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .warning-icon {
+      flex-shrink: 0;
+      font-size: 1rem;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    .warning-text {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      line-height: 1.7;
+      color: rgba(255,59,92,0.75);
+      letter-spacing: 0.05em;
+    }
+
+    .detonation-confirm {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .detonation-confirm input[type="checkbox"] {
+      appearance: none;
+      width: 16px; height: 16px;
+      border: 1px solid var(--border-dim);
+      border-radius: 3px;
+      background: var(--bg-card);
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: all var(--transition);
+    }
+
+    .detonation-confirm input[type="checkbox"]:checked {
+      background: var(--red-dim);
+      border-color: var(--red);
+    }
+
+    .detonation-confirm input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .confirm-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      user-select: none;
+    }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 99999;
+      pointer-events: none;
+    }
+
+    .toast {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      border: 1px solid;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1), fadeOut 0.4s 2.6s forwards;
+      pointer-events: auto;
+      max-width: 320px;
+    }
+
+    @keyframes fadeOut { to { opacity:0; transform: translateX(16px); } }
+
+    .toast.success {
+      background: rgba(57,217,138,0.12);
+      border-color: rgba(57,217,138,0.35);
+      color: var(--green);
+    }
+
+    .toast.error {
+      background: var(--red-dim);
+      border-color: rgba(255,59,92,0.35);
+      color: var(--red);
+    }
+
+    .toast.info {
+      background: var(--cyan-dim);
+      border-color: rgba(0,245,212,0.3);
+      color: var(--cyan);
+    }
+
+    .toast-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .toast.success .toast-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .toast.error   .toast-dot { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+    .toast.info    .toast-dot { background: var(--cyan);  box-shadow: 0 0 6px var(--cyan); }
+
+    /* ── SPAN PANEL (full width) ── */
+    .panel-span { grid-column: 1 / -1; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border-dim); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,245,212,0.25); }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 16px 32px;
+      border-top: 1px solid var(--border-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    .footer-text span { color: var(--cyan); }
+
+    @media (max-width: 768px) {
+      .panel-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 0 16px; }
+      .main { padding: 16px; }
+      .topbar-status { gap: 12px; }
+      .status-chip { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- ══════ AUTH GATE ══════ -->
+<div id="auth-gate">
+  <div class="auth-box">
+    <div class="auth-corner tl"></div>
+    <div class="auth-corner tr"></div>
+    <div class="auth-corner bl"></div>
+    <div class="auth-corner br"></div>
+
+    <div class="auth-logo">
+      <span class="auth-logo-text">LEARNEX</span>
+      <span class="auth-logo-sub">Operator Console // Restricted Access</span>
+    </div>
+    <div class="auth-separator"></div>
+
+    <div class="auth-field">
+      <label class="auth-label" for="auth-operator-id">⬡ Operator ID</label>
+      <input class="auth-input" id="auth-operator-id" type="text"
+             placeholder="Enter operator identifier" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="auth-field">
+      <label class="auth-label" for="auth-key">⬡ Access Matrix Key</label>
+      <input class="auth-input" id="auth-key" type="password"
+             placeholder="Enter access key" autocomplete="off" />
+    </div>
+
+    <div class="auth-error" id="auth-error" style="display:none">
+      <span class="auth-error-dot"></span>
+      <span id="auth-error-msg">AUTHENTICATION FAILURE — ACCESS DENIED</span>
+    </div>
+
+    <button class="btn-auth" id="btn-auth-submit" onclick="handleAuth()">
+      <span>Initiate Access Protocol</span>
+    </button>
+
+    <div class="auth-attempt-counter" id="attempt-counter">Awaiting credential input…</div>
+  </div>
+</div>
+
+<!-- ══════ APP ══════ -->
+<div id="app">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="brand-name">LEARNEX</span>
+      <div class="brand-divider"></div>
+      <span class="brand-console">Admin Console v2.0</span>
+    </div>
+
+    <div class="topbar-status">
+      <div class="status-chip">
+        <span class="status-dot"></span>
+        <span>Systems Nominal</span>
+      </div>
+      <div class="status-chip">
+        <span class="status-dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:none"></span>
+        <span>Storage Online</span>
+      </div>
+      <div class="topbar-clock" id="topbar-clock">--:--:--</div>
+      <button class="btn-logout" onclick="handleLogout()">⏻ Terminate</button>
+    </div>
+  </header>
+
+  <!-- OPERATOR STRIP -->
+  <div class="operator-strip">
+    <span class="op-label">Operator:</span>
+    <span class="op-value" id="op-display">—</span>
+    <span class="op-pipe">|</span>
+    <span class="op-label">Session ID:</span>
+    <span class="op-value" id="session-id-display">—</span>
+    <span class="op-pipe">|</span>
+    <span class="op-label">Auth Level:</span>
+    <span class="op-value" style="color:var(--green)">OMEGA-1 CLEARANCE</span>
+    <span class="op-pipe">|</span>
+    <span class="op-label">Session Start:</span>
+    <span class="op-value" id="session-start-display">—</span>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="panel-grid">
+
+      <!-- ═══ PANEL 1: AROLINKS CONFIG ═══ -->
+      <div class="panel" id="panel-arolinks">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 012 2v7"/><path d="M11 18H8a2 2 0 01-2-2V9"/></svg>
+            </div>
+            <div>
+              <div class="panel-title">AroLinks Config</div>
+              <div class="panel-subtitle">lnx_arolinks_api_key // API Gateway</div>
+            </div>
+          </div>
+          <span class="panel-badge badge-active" id="arolinks-badge">ACTIVE</span>
+        </div>
+        <div class="panel-body">
+          <div class="field-group">
+            <div class="field-label">
+              <span class="field-label-text">⬡ API Key</span>
+              <span class="field-hint" id="arolinks-saved-at"></span>
+            </div>
+            <input class="cyber-input" id="arolinks-api-key" type="text"
+                   placeholder="lnx_arolinks_xxxxxxxxxxxxxxxxxxxxxxxx"
+                   autocomplete="off" spellcheck="false"
+                   oninput="onArolinksInput()" />
+          </div>
+
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary btn-full" onclick="saveArolinks()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save Configuration
+            </button>
+            <button class="btn btn-ghost" onclick="clearArolinks()" title="Clear">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            </button>
+          </div>
+
+          <!-- Validation Monitor -->
+          <div class="validation-monitor">
+            <div class="monitor-header">
+              <span class="monitor-title">⬡ Validation Monitor</span>
+              <div class="monitor-status" id="arolinks-monitor-status">
+                <span class="status-dot" id="arolinks-status-dot" style="animation:none"></span>
+                <span id="arolinks-status-text" style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.1em;">STANDBY</span>
+              </div>
+            </div>
+            <div class="monitor-rows">
+              <div class="monitor-row">
+                <span class="monitor-key">lnx_arolinks_api_key</span>
+                <span class="monitor-val empty" id="mon-key-preview">[ NOT SET ]</span>
+              </div>
+              <div class="monitor-row">
+                <span class="monitor-key">Format check</span>
+                <span class="monitor-val" id="mon-format-check" style="color:var(--text-muted)">—</span>
+              </div>
+              <div class="monitor-row">
+                <span class="monitor-key">Length</span>
+                <span class="monitor-val" id="mon-length">0 chars</span>
+              </div>
+              <div class="monitor-row">
+                <span class="monitor-key">Last saved</span>
+                <span class="monitor-val" id="mon-last-saved" style="color:var(--text-muted)">Never</span>
+              </div>
+            </div>
+            <div class="sweep-bar" id="arolinks-sweep"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL 2: POPUP MANAGER ═══ -->
+      <div class="panel" id="panel-popup">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div>
+              <div class="panel-title">Popup Manager</div>
+              <div class="panel-subtitle">lnx_popup_status // Global Alerts</div>
+            </div>
+          </div>
+          <span class="panel-badge" id="popup-badge">IDLE</span>
+        </div>
+        <div class="panel-body">
+
+          <!-- Toggle -->
+          <div class="toggle-row" id="popup-toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-name">Global Popup Broadcast</span>
+              <span class="toggle-desc">lnx_popup_status = 1 | Activates sitewide alert layer</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="popup-toggle" onchange="onPopupToggle()" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="field-group">
+            <div class="field-label">
+              <span class="field-label-text">⬡ Popup Message</span>
+            </div>
+            <input class="cyber-input" id="popup-message" type="text"
+                   placeholder="Enter global alert message…"
+                   oninput="updatePopupPreview()" />
+          </div>
+
+          <div class="field-group">
+            <div class="field-label">
+              <span class="field-label-text">⬡ App Link (CTA URL)</span>
+            </div>
+            <input class="cyber-input" id="popup-link" type="text"
+                   placeholder="https://learnex.app/target-page"
+                   oninput="updatePopupPreview()" />
+          </div>
+
+          <button class="btn btn-primary btn-full" onclick="savePopupConfig()" style="margin-bottom:16px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Broadcast Configuration
+          </button>
+
+          <!-- Live Preview -->
+          <div class="popup-preview">
+            <div class="popup-preview-label">Live Preview</div>
+            <div class="popup-preview-content" id="popup-preview-msg">No message configured…</div>
+            <div class="popup-preview-link" id="popup-preview-link" style="display:none">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <span id="popup-preview-link-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL 3: TOKEN ANALYTICS LEDGER (full width) ═══ -->
+      <div class="panel panel-span">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div>
+              <div class="panel-title">Token Analytics Ledger</div>
+              <div class="panel-subtitle">lnx_* namespace // Active session token registry</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="panel-badge badge-warn" id="ledger-badge">SCANNING</span>
+            <button class="btn btn-ghost" onclick="refreshLedger()" style="padding:6px 12px;font-size:0.58rem">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-controls">
+            <div class="table-search">
+              <svg class="table-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input id="ledger-search" type="text" placeholder="Search keys or values…"
+                     oninput="filterLedger()" autocomplete="off" />
+            </div>
+            <span class="table-count" id="ledger-count">0 records</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Value</th>
+                  <th>Type</th>
+                  <th>Size</th>
+                  <th style="text-align:right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="ledger-tbody">
+                <tr><td colspan="5" class="table-empty">No lnx_ tokens found in storage</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PANEL 4: EMERGENCY PURGE ═══ -->
+      <div class="panel panel-span detonation-zone">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div>
+              <div class="panel-title">Emergency Purge Layer</div>
+              <div class="panel-subtitle">Master Detonation // Irreversible lnx_* namespace wipe</div>
+            </div>
+          </div>
+          <span class="panel-badge" style="color:var(--red);border-color:rgba(255,59,92,0.3);background:var(--red-dim)">ARMED</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="threat-grid">
+            <div class="threat-card">
+              <span class="threat-num" id="purge-total">—</span>
+              <span class="threat-label">Total lnx_ Keys</span>
+            </div>
+            <div class="threat-card">
+              <span class="threat-num" id="purge-bytes" style="font-size:1.1rem">—</span>
+              <span class="threat-label">Estimated Bytes</span>
+            </div>
+            <div class="threat-card">
+              <span class="threat-num" id="purge-session" style="color:var(--yellow);text-shadow:0 0 12px rgba(245,197,24,0.5)">—</span>
+              <span class="threat-label">Session Tokens</span>
+            </div>
+          </div>
+
+          <div class="detonation-warning">
+            <span class="warning-icon">⚠</span>
+            <span class="warning-text">
+              CRITICAL OPERATION — This action will irrevocably destroy all <strong>lnx_*</strong> prefixed keys from localStorage.
+              This includes API credentials, popup configurations, session tokens, and all runtime state.
+              <br/>This action cannot be undone. Confirm intent before proceeding.
+            </span>
+          </div>
+
+          <label class="detonation-confirm" for="purge-confirm-cb">
+            <input type="checkbox" id="purge-confirm-cb" onchange="onPurgeConfirm()" />
+            <span class="confirm-label">I understand this is irreversible and authorize the purge of all lnx_* namespace data</span>
+          </label>
+
+          <button class="btn btn-danger" id="btn-detonate" onclick="executePurge()" disabled>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            ⬡ MASTER DETONATION — PURGE ALL LNX_ TOKENS
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /panel-grid -->
+  </main>
+
+  <footer class="footer">
+    <span class="footer-text">LEARNEX Console // <span>Operator Session Active</span> // All operations logged</span>
+    <span class="footer-text">Built on Vanilla JS // <span>localStorage</span> state architecture // Zero external dependencies</span>
+  </footer>
+</div><!-- /app -->
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script>
+  // ════════════════════════════════════════════
+  //   CONSTANTS & STATE
+  // ════════════════════════════════════════════
+  const CREDENTIALS = {
+    operatorId: 'Pratikxlearnex',
+    key: 'pratik09'
+  };
+
+  const PREFIX = 'lnx_';
+  let authAttempts = 0;
+  let sessionId = '';
+  let sessionStart = '';
+  let ledgerData = [];
+
+  // ════════════════════════════════════════════
+  //   UTILITIES
+  // ════════════════════════════════════════════
+  function genSessionId() {
+    return 'SID-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+  }
+
+  function now() {
+    return new Date().toLocaleTimeString('en-GB', { hour12: false });
+  }
+
+  function nowFull() {
+    return new Date().toLocaleString('en-GB', { hour12: false });
+  }
+
+  function toast(msg, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span class="toast-dot"></span><span>${msg}</span>`;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 3100);
+  }
+
+  function lsSet(key, value) {
+    localStorage.setItem(PREFIX + key, value);
+  }
+
+  function lsGet(key) {
+    return localStorage.getItem(PREFIX + key);
+  }
+
+  function lsDel(key) {
+    localStorage.removeItem(PREFIX + key);
+  }
+
+  function getAllLnxKeys() {
+    const items = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(PREFIX)) {
+        items.push({ key: k, value: localStorage.getItem(k) });
+      }
+    }
+    return items;
+  }
+
+  // ════════════════════════════════════════════
+  //   CLOCK
+  // ════════════════════════════════════════════
+  function updateClock() {
+    const el = document.getElementById('topbar-clock');
+    if (el) el.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
+  }
+  setInterval(updateClock, 1000);
+
+  // ════════════════════════════════════════════
+  //   AUTH
+  // ════════════════════════════════════════════
+  document.getElementById('auth-operator-id').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('auth-key').focus();
+  });
+
+  document.getElementById('auth-key').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleAuth();
+  });
+
+  function handleAuth() {
+    const operatorId = document.getElementById('auth-operator-id').value.trim();
+    const key = document.getElementById('auth-key').value;
+    const errorEl = document.getElementById('auth-error');
+    const errorMsg = document.getElementById('auth-error-msg');
+    const counterEl = document.getElementById('attempt-counter');
+    const btn = document.getElementById('btn-auth-submit');
+
+    if (operatorId === CREDENTIALS.operatorId && key === CREDENTIALS.key) {
+      // SUCCESS
+      errorEl.style.display = 'none';
+      btn.querySelector('span').textContent = 'Access Granted…';
+      btn.style.pointerEvents = 'none';
+
+      sessionId = genSessionId();
+      sessionStart = nowFull();
+
+      setTimeout(() => {
+        document.getElementById('auth-gate').classList.add('hidden');
+        document.getElementById('app').classList.add('active');
+        document.getElementById('op-display').textContent = operatorId;
+        document.getElementById('session-id-display').textContent = sessionId;
+        document.getElementById('session-start-display').textContent = sessionStart;
+        initApp();
+        toast('Authentication successful. Welcome, ' + operatorId, 'success');
+      }, 600);
+    } else {
+      authAttempts++;
+      errorEl.style.display = 'flex';
+
+      if (authAttempts >= 3) {
+        errorMsg.textContent = 'MAX ATTEMPTS EXCEEDED — REDIRECTING…';
+        btn.disabled = true;
+        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+      } else {
+        errorMsg.textContent = 'AUTHENTICATION FAILURE — ACCESS DENIED';
+        counterEl.textContent = `Failed attempts: ${authAttempts} / 3`;
+        document.getElementById('auth-key').value = '';
+        document.getElementById('auth-key').focus();
+      }
+    }
+  }
+
+  function handleLogout() {
+    if (!confirm('Terminate operator session?')) return;
+    document.getElementById('app').classList.remove('active');
+    document.getElementById('auth-gate').classList.remove('hidden');
+    document.getElementById('auth-operator-id').value = '';
+    document.getElementById('auth-key').value = '';
+    document.getElementById('auth-error').style.display = 'none';
+    authAttempts = 0;
+    document.getElementById('attempt-counter').textContent = 'Awaiting credential input…';
+    document.getElementById('btn-auth-submit').querySelector('span').textContent = 'Initiate Access Protocol';
+    document.getElementById('btn-auth-submit').style.pointerEvents = '';
+    document.getElementById('btn-auth-submit').disabled = false;
+  }
+
+  // ════════════════════════════════════════════
+  //   APP INIT
+  // ════════════════════════════════════════════
+  function initApp() {
+    loadArolinksState();
+    loadPopupState();
+    refreshLedger();
+    refreshPurgeStats();
+    updateClock();
+  }
+
+  // ════════════════════════════════════════════
+  //   PANEL 1 — AROLINKS CONFIG
+  // ════════════════════════════════════════════
+  function loadArolinksState() {
+    const saved = lsGet('arolinks_api_key');
+    if (saved) {
+      document.getElementById('arolinks-api-key').value = saved;
+      updateArolinksMonitor(saved, true);
+      document.getElementById('arolinks-badge').textContent = 'ACTIVE';
+      document.getElementById('arolinks-badge').className = 'panel-badge badge-active';
+    } else {
+      updateArolinksMonitor('', false);
+      document.getElementById('arolinks-badge').textContent = 'NOT SET';
+      document.getElementById('arolinks-badge').className = 'panel-badge badge-idle';
+    }
+  }
+
+  function onArolinksInput() {
+    const val = document.getElementById('arolinks-api-key').value;
+    updateArolinksMonitor(val, false);
+  }
+
+  function updateArolinksMonitor(val, saved) {
+    const previewEl = document.getElementById('mon-key-preview');
+    const formatEl = document.getElementById('mon-format-check');
+    const lengthEl = document.getElementById('mon-length');
+    const statusDot = document.getElementById('arolinks-status-dot');
+    const statusText = document.getElementById('arolinks-status-text');
+
+    if (!val) {
+      previewEl.textContent = '[ NOT SET ]';
+      previewEl.className = 'monitor-val empty';
+      formatEl.textContent = '—';
+      formatEl.style.color = 'var(--text-muted)';
+      lengthEl.textContent = '0 chars';
+      statusDot.style.background = 'var(--text-muted)';
+      statusDot.style.boxShadow = 'none';
+      statusText.textContent = 'STANDBY';
+      statusText.style.color = 'var(--text-muted)';
+      return;
+    }
+
+    // Preview (mask middle)
+    const masked = val.length > 12
+      ? val.substring(0, 6) + '••••••••' + val.substring(val.length - 4)
+      : val.substring(0, 3) + '•••';
+    previewEl.textContent = masked;
+    previewEl.className = 'monitor-val';
+
+    // Format check
+    const isLnxPrefixed = val.startsWith('lnx_');
+    const hasGoodLength = val.length >= 20;
+
+    if (isLnxPrefixed && hasGoodLength) {
+      formatEl.textContent = '✓ Valid lnx_ format';
+      formatEl.style.color = 'var(--green)';
+      statusDot.style.background = saved ? 'var(--green)' : 'var(--yellow)';
+      statusDot.style.boxShadow = saved ? '0 0 8px var(--green)' : '0 0 8px var(--yellow)';
+      statusText.textContent = saved ? 'VERIFIED & STORED' : 'VALID — UNSAVED';
+      statusText.style.color = saved ? 'var(--green)' : 'var(--yellow)';
+    } else if (!isLnxPrefixed) {
+      formatEl.textContent = '⚠ Missing lnx_ prefix';
+      formatEl.style.color = 'var(--yellow)';
+      statusDot.style.background = 'var(--yellow)';
+      statusDot.style.boxShadow = '0 0 8px var(--yellow)';
+      statusText.textContent = 'FORMAT WARNING';
+      statusText.style.color = 'var(--yellow)';
+    } else {
+      formatEl.textContent = '⚠ Key too short (<20 chars)';
+      formatEl.style.color = 'var(--yellow)';
+      statusDot.style.background = 'var(--yellow)';
+      statusDot.style.boxShadow = '0 0 8px var(--yellow)';
+      statusText.textContent = 'LENGTH WARNING';
+      statusText.style.color = 'var(--yellow)';
+    }
+
+    lengthEl.textContent = val.length + ' chars';
+  }
+
+  function saveArolinks() {
+    const val = document.getElementById('arolinks-api-key').value.trim();
+    if (!val) { toast('Cannot save empty API key', 'error'); return; }
+
+    lsSet('arolinks_api_key', val);
+    const ts = nowFull();
+    document.getElementById('mon-last-saved').textContent = ts;
+    document.getElementById('mon-last-saved').style.color = 'var(--green)';
+    document.getElementById('arolinks-badge').textContent = 'ACTIVE';
+    document.getElementById('arolinks-badge').className = 'panel-badge badge-active';
+    updateArolinksMonitor(val, true);
+    refreshLedger();
+    refreshPurgeStats();
+    toast('AroLinks API key saved to storage', 'success');
+  }
+
+  function clearArolinks() {
+    if (!confirm('Clear the AroLinks API key from storage?')) return;
+    lsDel('arolinks_api_key');
+    document.getElementById('arolinks-api-key').value = '';
+    updateArolinksMonitor('', false);
+    document.getElementById('mon-last-saved').textContent = 'Never';
+    document.getElementById('mon-last-saved').style.color = 'var(--text-muted)';
+    document.getElementById('arolinks-badge').textContent = 'NOT SET';
+    document.getElementById('arolinks-badge').className = 'panel-badge badge-idle';
+    refreshLedger();
+    refreshPurgeStats();
+    toast('AroLinks API key cleared', 'info');
+  }
+
+  // ════════════════════════════════════════════
+  //   PANEL 2 — POPUP MANAGER
+  // ════════════════════════════════════════════
+  function loadPopupState() {
+    const status = lsGet('popup_status');
+    const msg = lsGet('popup_message') || '';
+    const link = lsGet('app_link') || '';
+
+    document.getElementById('popup-toggle').checked = status === '1';
+    document.getElementById('popup-message').value = msg;
+    document.getElementById('popup-link').value = link;
+
+    updatePopupBadge(status === '1');
+    updatePopupPreview();
+  }
+
+  function onPopupToggle() {
+    const active = document.getElementById('popup-toggle').checked;
+    updatePopupBadge(active);
+    lsSet('popup_status', active ? '1' : '0');
+    refreshLedger();
+    toast('Popup status: ' + (active ? 'BROADCAST ACTIVE' : 'DISABLED'), active ? 'success' : 'info');
+  }
+
+  function updatePopupBadge(active) {
+    const badge = document.getElementById('popup-badge');
+    const row = document.getElementById('popup-toggle-row');
+    if (active) {
+      badge.textContent = 'LIVE';
+      badge.className = 'panel-badge badge-active';
+      row.classList.add('active');
+    } else {
+      badge.textContent = 'IDLE';
+      badge.className = 'panel-badge badge-idle';
+      row.classList.remove('active');
+    }
+  }
+
+  function updatePopupPreview() {
+    const msg = document.getElementById('popup-message').value;
+    const link = document.getElementById('popup-link').value;
+    const msgEl = document.getElementById('popup-preview-msg');
+    const linkEl = document.getElementById('popup-preview-link');
+    const linkTextEl = document.getElementById('popup-preview-link-text');
+
+    msgEl.textContent = msg || 'No message configured…';
+    msgEl.style.color = msg ? 'var(--text-primary)' : 'var(--text-muted)';
+
+    if (link) {
+      linkEl.style.display = 'flex';
+      linkTextEl.textContent = link;
+    } else {
+      linkEl.style.display = 'none';
+    }
+  }
+
+  function savePopupConfig() {
+    const msg = document.getElementById('popup-message').value.trim();
+    const link = document.getElementById('popup-link').value.trim();
+
+    if (!msg && !link) { toast('No popup configuration to save', 'error'); return; }
+
+    if (msg) lsSet('popup_message', msg);
+    if (link) lsSet('app_link', link);
+    refreshLedger();
+    refreshPurgeStats();
+    toast('Popup configuration broadcast', 'success');
+  }
+
+  // ════════════════════════════════════════════
+  //   PANEL 3 — TOKEN ANALYTICS LEDGER
+  // ════════════════════════════════════════════
+  function refreshLedger() {
+    ledgerData = getAllLnxKeys();
+    renderLedger(ledgerData);
+    updateLedgerBadge(ledgerData.length);
+  }
+
+  function updateLedgerBadge(count) {
+    const badge = document.getElementById('ledger-badge');
+    if (count > 0) {
+      badge.textContent = count + ' ACTIVE';
+      badge.className = 'panel-badge badge-active';
+    } else {
+      badge.textContent = 'EMPTY';
+      badge.className = 'panel-badge badge-idle';
+    }
+  }
+
+  function filterLedger() {
+    const query = document.getElementById('ledger-search').value.toLowerCase();
+    if (!query) {
+      renderLedger(ledgerData);
+      return;
+    }
+    const filtered = ledgerData.filter(item =>
+      item.key.toLowerCase().includes(query) ||
+      (item.value && item.value.toLowerCase().includes(query))
+    );
+    renderLedger(filtered);
+  }
+
+  function renderLedger(items) {
+    const tbody = document.getElementById('ledger-tbody');
+    const countEl = document.getElementById('ledger-count');
+    countEl.textContent = items.length + ' record' + (items.length !== 1 ? 's' : '');
+
+    if (items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="table-empty">⬡ No lnx_ tokens found in storage</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = items.map(item => {
+      const displayVal = item.value && item.value.length > 40
+        ? item.value.substring(0, 40) + '…'
+        : (item.value || '');
+      const maskedVal = maskValue(item.key, item.value || '');
+      const typeLabel = classifyToken(item.key);
+      const sizeBytes = new Blob([item.value || '']).size;
+
+      return `<tr>
+        <td class="td-key" title="${escHtml(item.key)}">${escHtml(item.key)}</td>
+        <td class="td-value" title="${escHtml(item.value || '')}">${escHtml(maskedVal)}</td>
+        <td class="td-type">${typeLabel}</td>
+        <td class="td-type">${sizeBytes}B</td>
+        <td class="td-actions">
+          <button class="btn-table-del" onclick="deleteLedgerKey('${escHtml(item.key)}')">DEL</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function maskValue(key, val) {
+    if (!val) return '[ empty ]';
+    const sensitiveKeys = ['api_key', 'key', 'token', 'secret', 'password', 'auth'];
+    const isSensitive = sensitiveKeys.some(s => key.toLowerCase().includes(s));
+    if (isSensitive && val.length > 8) {
+      return val.substring(0, 4) + '••••••••' + val.substring(val.length - 2);
+    }
+    return val;
+  }
+
+  function classifyToken(key) {
+    if (key.includes('api_key')) return 'API KEY';
+    if (key.includes('token')) return 'TOKEN';
+    if (key.includes('popup_status')) return 'CONFIG';
+    if (key.includes('popup_message')) return 'MESSAGE';
+    if (key.includes('app_link')) return 'LINK';
+    if (key.includes('session')) return 'SESSION';
+    return 'STORAGE';
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function deleteLedgerKey(key) {
+    if (!confirm(`Delete key: ${key}?`)) return;
+    localStorage.removeItem(key);
+    refreshLedger();
+    refreshPurgeStats();
+    toast(`Key ${key} removed`, 'info');
+  }
+
+  // ════════════════════════════════════════════
+  //   PANEL 4 — EMERGENCY PURGE
+  // ════════════════════════════════════════════
+  function refreshPurgeStats() {
+    const keys = getAllLnxKeys();
+    const totalBytes = keys.reduce((acc, item) => acc + new Blob([item.value || '']).size + new Blob([item.key]).size, 0);
+    const sessionTokens = keys.filter(i => i.key.includes('token') || i.key.includes('session')).length;
+
+    const purgeTotal = document.getElementById('purge-total');
+    const purgeBytes = document.getElementById('purge-bytes');
+    const purgeSess = document.getElementById('purge-session');
+
+    purgeTotal.textContent = keys.length;
+    purgeTotal.style.animation = 'none';
+    setTimeout(() => purgeTotal.style.animation = 'countUp 0.4s ease', 10);
+
+    purgeBytes.textContent = totalBytes < 1024 ? totalBytes + 'B' : (totalBytes / 1024).toFixed(1) + 'KB';
+    purgeSess.textContent = sessionTokens;
+  }
+
+  function onPurgeConfirm() {
+    const checked = document.getElementById('purge-confirm-cb').checked;
+    document.getElementById('btn-detonate').disabled = !checked;
+  }
+
+  function executePurge() {
+    if (!document.getElementById('purge-confirm-cb').checked) return;
+
+    const keys = getAllLnxKeys().map(i => i.key);
+    if (keys.length === 0) {
+      toast('No lnx_ tokens to purge', 'info');
+      return;
+    }
+
+    if (!confirm(`FINAL CONFIRMATION: Permanently destroy ${keys.length} lnx_* token(s)?`)) return;
+
+    let count = 0;
+    keys.forEach(k => {
+      localStorage.removeItem(k);
+      count++;
+    });
+
+    // Reset UI
+    document.getElementById('arolinks-api-key').value = '';
+    document.getElementById('popup-message').value = '';
+    document.getElementById('popup-link').value = '';
+    document.getElementById('popup-toggle').checked = false;
+    updatePopupBadge(false);
+    updatePopupPreview();
+    updateArolinksMonitor('', false);
+    document.getElementById('arolinks-badge').textContent = 'NOT SET';
+    document.getElementById('arolinks-badge').className = 'panel-badge badge-idle';
+    document.getElementById('purge-confirm-cb').checked = false;
+    document.getElementById('btn-detonate').disabled = true;
+    document.getElementById('mon-last-saved').textContent = 'Never';
+    document.getElementById('mon-last-saved').style.color = 'var(--text-muted)';
+
+    refreshLedger();
+    refreshPurgeStats();
+    toast(`PURGE COMPLETE — ${count} lnx_* token(s) destroyed`, 'error');
+  }
+</script>
+</body>
+</html>

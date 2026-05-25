@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Video Player</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <link rel="stylesheet" href="https://static.pw.live/fonts/reddit/font.css">
+    <script disable-devtool-auto src="https://cdn.jsdelivr.net/npm/disable-devtool"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'RedditSans', 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            color: #fff;
+        }
+
+        #plyr-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(124, 58, 237, 0.3);
+            border-top-color: #7c3aed;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .retry-info {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .progress-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(23, 23, 28, 0.98);
+            border-radius: 16px;
+            padding: 30px;
+            z-index: 999999;
+            min-width: 320px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .progress-modal.active {
+            display: block;
+        }
+
+        .progress-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .plyr__controls {
+            padding-bottom: .5rem;
+            background: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, .7));
+            padding: 1rem;
+            margin: 0 20px;
+        }
+
+        .plyr__controls__item[type="button"]:hover {
+            scale: 1.1;
+            transition: scale 0.2s ease;
+        }
+
+        .plyr--video {
+            height: calc(var(--vh, 1vh) * 100);
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            height: 0;
+            width: 0;
+            display: none;
+        }
+
+        .plyr__menu__container {
+            background-color: #17171C;
+            font-family: 'RedditSans', 'sans-serif';
+            font-size: 14px;
+            font-weight: 500;
+            color: rgb(255 255 255);
+            z-index: 10;
+            margin-top: .75rem;
+            width: 360px;
+            opacity: 1;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            border-radius: 0.5rem;
+        }
+
+        .plyr__menu__container > div {
+            max-height: 80vh;
+            overflow: scroll;
+        }
+
+        .plyr__menu__container .plyr__control {
+            color: #d9d9da;
+        }
+
+        .plyr__menu__container .plyr__menu__value {
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+            border-radius: .375rem;
+            background-color: rgb(35 35 42);
+            padding: 10px 6px 10px .75rem;
+            cursor: pointer;
+        }
+
+        .plyr__control[role=menuitemradio][aria-checked=true]:before {
+            background-color: #B2A9FF;
+        }
+
+        .plyr__control[aria-checked="true"] {
+            background-color: #332E56;
+        }
+
+        .plyr__menu__container .plyr__control--back {
+            margin-bottom: .25rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: .75rem;
+            padding-bottom: .75rem;
+            cursor: pointer;
+        }
+
+        .plyr__menu__container .plyr__control[role=menuitemradio] {
+            margin-bottom: .25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .5rem;
+            cursor: pointer;
+            border-radius: .25rem;
+        }
+
+        .plyr__menu__container .plyr__control > span {
+            font-size: 1rem;
+            line-height: 28px;
+            font-weight: 600;
+        }
+
+        .plyr__progress__container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: calc(100% - 1.5em);
+            margin-left: 1.5em;
+        }
+
+        .plyr__time--current {
+            position: absolute;
+            top: -2rem;
+            font-size: .85em;
+            line-height: 1.8em;
+            left: 0;
+            border-radius: .25rem;
+        }
+
+        .plyr__time--duration {
+            position: absolute;
+            top: -2rem;
+            font-size: .85em;
+            line-height: 1.8em;
+            right: 0;
+            border-radius: .25rem;
+        }
+
+        .plyr--full-ui input[type=range] {
+            color: #5a4bda;
+        }
+
+        .plyr__controls__item[data-plyr="play"] {
+            position: absolute;
+            left: 0;
+        }
+
+        .plyr__controls__item[data-plyr="rewind"] {
+            position: absolute;
+            left: 3.5rem;
+        }
+
+        .plyr__controls__item[data-plyr="fast-forward"] {
+            position: absolute;
+            left: 6rem;
+        }
+
+        .plyr--full-ui.plyr--video .plyr__control--overlaid {
+            padding: 1rem;
+        }
+
+        .plyr__control svg {
+            height: 1.5rem;
+            width: 1.5rem;
+        }
+
+        .plyr__control[role=menuitemradio] span .plyr__menu__value {
+            display: none;
+        }
+
+        .plyr__controls__item[data-plyr="fast-forward"] {
+            background-image: url('https://www.pw.live/watch/forward.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 2rem;
+            width: 2rem;
+            margin-left: .75rem;
+        }
+
+        .plyr__controls__item[data-plyr="rewind"] {
+            background-image: url('https://www.pw.live/watch/backward.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 2rem;
+            width: 2rem;
+            margin-left: .75rem;
+        }
+
+        .plyr__controls__item[data-plyr="fullscreen"] {
+            background-image: url('https://www.pw.live/watch/maximize.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 2rem;
+            width: 2rem;
+            margin-left: .75rem;
+        }
+
+        .plyr__control--pressed[data-plyr="fullscreen"] {
+            background-image: url('https://raw.githubusercontent.com/nexttoppers/nexttoppers.github.io/d7aa8a83f9bef4cc09d81509cb80438acc65f1ae/minimize.svg');
+        }
+
+        .plyr__controls__item[data-plyr="rewind"] svg,
+        .plyr__controls__item[data-plyr="fast-forward"] svg,
+        .plyr__controls__item[data-plyr="fullscreen"] svg {
+            display: none;
+        }
+
+        .plyr__controls__item[data-plyr="fast-forward"]:hover,
+        .plyr__controls__item[data-plyr="rewind"]:hover {
+            background-color: initial;
+        }
+
+        .plyr__controls__item[data-plyr="fast-forward"]:active {
+            rotate: 90deg;
+        }
+
+        .plyr__controls__item[data-plyr="rewind"]:active {
+            rotate: -90deg;
+        }
+
+        .plyr__controls__item[data-plyr="download"] {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIxIDE1djRhMiAyIDAgMCAxLTIgMkg1YTIgMiAwIDAgMS0yLTJ2LTQiPjwvcGF0aD48cG9seWxpbmUgcG9pbnRzPSI3IDEwIDEyIDE1IDE3IDEwIj48L3BvbHlsaW5lPjxsaW5lIHgxPSIxMiIgeTE9IjE1IiB4Mj0iMTIiIHkyPSIzIj48L2xpbmU+PC9zdmc+');
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 2rem;
+            width: 2rem;
+            margin-left: .75rem;
+        }
+
+        .plyr__controls__item[data-plyr="download"] svg {
+            display: none;
+        }
+
+        .plyr__controls__item[data-plyr="download"]:hover {
+            background-color: initial;
+        }
+
+        .quality-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(17, 17, 28, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 0;
+            z-index: 2147483647;
+            width: 420px;
+            max-width: 92vw;
+            max-height: 85vh;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            display: none;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            overflow: hidden;
+        }
+
+        .quality-modal.active {
+            display: block;
+            animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalSlideUp {
+            from { 
+                opacity: 0; 
+                transform: translate(-50%, -40%) scale(0.9);
+            }
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .quality-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .quality-modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quality-modal-title::before {
+            content: '⬇';
+            font-size: 24px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .quality-close-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .quality-close-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .quality-options-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: calc(85vh - 100px);
+            overflow-y: auto;
+        }
+
+        .quality-options-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .quality-options-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .quality-options-container::-webkit-scrollbar-thumb {
+            background: rgba(124, 58, 237, 0.5);
+            border-radius: 10px;
+        }
+
+        .quality-option {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 16px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quality-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .quality-option:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%);
+            border-color: #7c3aed;
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+        }
+
+        .quality-option:hover::before {
+            left: 100%;
+        }
+
+        .quality-option:active {
+            transform: translateX(4px) scale(0.98);
+        }
+
+        .quality-label {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: white;
+        }
+
+        .quality-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .quality-option:hover .quality-icon {
+            transform: rotate(5deg) scale(1.1);
+        }
+
+        .quality-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .quality-info {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+
+        @media (max-width: 767px) {
+            .plyr__time + .plyr__time {
+                display: block;
+            }
+            
+            .quality-modal {
+                min-width: 90vw;
+                padding: 25px;
+            }
+            
+            .quality-modal-title {
+                font-size: 20px;
+            }
+            
+            .quality-option {
+                padding: 15px 18px;
+            }
+            
+            .quality-label {
+                font-size: 16px;
+            }
+            
+            .quality-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .plyr__volume {
+                display: none;
+            }
+
+            .plyr__control {
+                padding: 4px;
+            }
+
+            .plyr__menu__container {
+                width: 80vw;
+                right: -18px;
+            }
+
+            .plyr__controls {
+                padding: .5rem;
+                margin: 0 5px;
+            }
+
+            .plyr__menu__container .plyr__control > span {
+                font-size: .75rem;
+            }
+            
+            .progress-modal {
+                min-width: 280px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .plyr--video {
+                height: 100%;
+            }
+
+            .plyr__menu__container {
+                right: -18px;
+                overflow: scroll;
+            }
+
+            .plyr__controls {
+                margin: 0 .1rem;
+                background: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.314));
+            }
+
+            .plyr__progress__container {
+                top: 0px;
+            }
+
+            .plyr__time--duration,
+            .plyr__time--current {
+                top: -1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .plyr__controls {
+                margin: 0;
+                padding-bottom: .5rem;
+            }
+
+            .plyr__progress__container {
+                top: -5px;
+            }
+
+            .plyr__control > span {
+                font-size: .75rem;
+            }
+        }
+
+        @media only screen and (max-height: 480px) {
+            .plyr__menu__container {
+                max-height: 12rem;
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2147483646;
+            display: none;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 500px) {
+            .quality-modal {
+                width: 95vw;
+            }
+            
+            .quality-modal-header {
+                padding: 20px;
+            }
+            
+            .quality-modal-title {
+                font-size: 18px;
+            }
+            
+            .quality-modal-title::before {
+                font-size: 20px;
+            }
+            
+            .quality-close-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+            
+            .quality-options-container {
+                padding: 16px;
+                gap: 10px;
+            }
+            
+            .quality-option {
+                padding: 16px 18px;
+            }
+            
+            .quality-label {
+                font-size: 16px;
+                gap: 12px;
+            }
+            
+            .quality-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .quality-badge {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text" id="loadingText">Loading video...</div>
+        <div class="retry-info" id="retryInfo"></div>
+    </div>
+
+    <div class="progress-modal" id="progressModal">
+        <div class="progress-title" id="progressTitle">Downloading...</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">0%</div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"></div>
+    
+    <div class="quality-modal" id="qualityModal">
+        <div class="quality-modal-header">
+            <div>
+                <div class="quality-modal-title">Select Video Quality</div>
+                <div class="quality-modal-subtitle">Choose your preferred download quality</div>
+            </div>
+            <button class="quality-close-btn" id="closeQualityModal">×</button>
+        </div>
+        <div class="quality-options-container" id="qualityOptionsContainer"></div>
+    </div>
+
+    <div id="plyr-video">
+        <video id="player" controls class="w-screen max-h-screen plyr--video z-10"></video>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        
+        document.addEventListener("keydown", function(event) {
+            if (event.keyCode == 123) event.preventDefault();
+        });
+        document.addEventListener("contextmenu", function(event) { 
+            event.preventDefault(); 
+        });
+
+        const video = document.getElementById('player');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const retryInfo = document.getElementById('retryInfo');
+        const progressModal = document.getElementById('progressModal');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressTitle = document.getElementById('progressTitle');
+        const qualityModal = document.getElementById('qualityModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const qualityOptionsContainer = document.getElementById('qualityOptionsContainer');
+        const closeQualityModal = document.getElementById('closeQualityModal');
+        const token = 'SkNKNDQ5b2plRTMxYXBpSGZDWEVrdz09OjpwMXAvdWlGelJGdTNiVUhkWXpveTc2SjFqckhxdmZLVlNKRnlyVGlYeThmVEZBK25JVHQvcExTQkVIdjVkZy9LTTNjL014bmxsNXNFVVUrcUhseElraG80dFdYd3hscERnUVQrRFdZWFhscUNKVjk5SVVBNDJKakNobHVERWMrVVZJY0lKOCthcVA4WGRUYXNXRjRpRSttcFZVZzVvc3NQd2g5L1dyeTM4YU9sdFN3SURUdlJnSDNkNnczT21NQ2FoZkczUkt4SWlGUHhpV2I5eUJiSXNzcitPMGx6NUt4ZEV3K1JJdGpaTWtHTnNEMGw0MEc4R0RCNmdsSC9YRktRd1AzM1hIZGJQcCtZVnR4UWZ4QzZ5eTZpSWZYcW9aRjc4RDF1ZHdzZU40Yz0=';
+
+        let hlsInstance = null;
+        let qualities = [];
+        let currentQualityIndex = 0;
+        let currentTime = 0;
+        let wasPlaying = false;
+        let isInFullscreen = false;
+        let globalRetryCount = 0;
+        let loadRetryCount = 0;
+        const MAX_GLOBAL_RETRIES = 10;
+        const MAX_LOAD_RETRIES = 5;
+        const RETRY_DELAY = 2000;
+        let player = null;
+        let isRecovering = false;
+        let lastSavedTime = 0;
+        let timeUpdateInterval = null;
+        let bufferCheckInterval = null;
+        let lastBufferCheck = 0;
+        let bufferStallCount = 0;
+        let mediaErrorCount = 0;
+        const MAX_BUFFER_STALLS = 3;
+        const MAX_MEDIA_ERRORS = 2;
+
+        function startTimeSaver() {
+            if (timeUpdateInterval) clearInterval(timeUpdateInterval);
+            timeUpdateInterval = setInterval(() => {
+                if (video && !isNaN(video.currentTime)) {
+                    lastSavedTime = video.currentTime;
+                    sessionStorage.setItem('videoTime_' + token, lastSavedTime.toString());
+                }
+            }, 1000);
+        }
+
+        function getSavedTime() {
+            const saved = sessionStorage.getItem('videoTime_' + token);
+            return saved ? parseFloat(saved) : 0;
+        }
+        
+        function updateLoadingText(message, retry = false) {
+            loadingText.textContent = message;
+            if (retry) {
+                retryInfo.textContent = `Retry attempt ${globalRetryCount + 1}/${MAX_GLOBAL_RETRIES}`;
+            } else {
+                retryInfo.textContent = '';
+            }
+        }
+
+        function showLoading(message = 'Loading video...', retry = false) {
+            updateLoadingText(message, retry);
+            loadingOverlay.classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+            }, 500);
+        }
+
+        function startBufferMonitoring() {
+            if (bufferCheckInterval) clearInterval(bufferCheckInterval);
+            
+            bufferCheckInterval = setInterval(() => {
+                if (!video || !hlsInstance) return;
+                
+                const currentTime = video.currentTime;
+                const buffered = video.buffered;
+                
+                if (buffered.length > 0) {
+                    const bufferEnd = buffered.end(buffered.length - 1);
+                    const bufferAhead = bufferEnd - currentTime;
+                    
+                
+                    if (bufferAhead < 5 && !video.paused) {
+                        console.log('Low buffer detected, preloading...');
+                        try {
+                            hlsInstance.loadLevel = hlsInstance.currentLevel;
+                        } catch (e) {
+                            console.log('Preload attempt failed:', e);
+                        }
+                    }
+                    
+                    lastBufferCheck = bufferAhead;
+                }
+            }, 2000);
+        }
+
+        async function recoverPlayback(errorType = 'unknown') {
+            if (isRecovering) return;
+            
+            isRecovering = true;
+            globalRetryCount++;
+            
+            console.log(`Recovery attempt ${globalRetryCount}/${MAX_GLOBAL_RETRIES} - Error type: ${errorType}`);
+            
+            if (globalRetryCount >= MAX_GLOBAL_RETRIES) {
+                updateLoadingText('Maximum retry attempts reached. Please refresh the page.');
+                isRecovering = false;
+                return;
+            }
+
+            showLoading('Recovering playback...', true);
+            
+            currentTime = lastSavedTime || video.currentTime || getSavedTime();
+            wasPlaying = !video.paused;
+
+            
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+
+            try {
+                if (hlsInstance) {
+                    try {
+                        hlsInstance.destroy();
+                    } catch (e) {
+                        console.log('HLS destroy error:', e);
+                    }
+                    hlsInstance = null;
+                }
+
+                await loadVideoByIndex(currentQualityIndex, true);
+                
+                isRecovering = false;
+                globalRetryCount = 0;
+                bufferStallCount = 0;
+                mediaErrorCount = 0;
+                
+            } catch (error) {
+                console.error('Recovery failed:', error);
+                isRecovering = false;
+                setTimeout(() => recoverPlayback(errorType), RETRY_DELAY);
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            isInFullscreen = !!document.fullscreenElement;
+        });
+
+        async function exitFullscreen() {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                await document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                await document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                await document.msExitFullscreen();
+            }
+        }
+
+        closeQualityModal.addEventListener('click', () => {
+            qualityModal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+        });
+
+        modalOverlay.addEventListener('click', () => {
+            qualityModal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+        });
+
+        async function fetchPlaylist() {
+            try {
+                const response = await fetch(`stream.php?action=playlist&token=${encodeURIComponent(token)}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch playlist');
+                }
+
+                const data = await response.json();
+                qualities = data.qualities || [];
+                
+                if (qualities.length === 0) {
+                    throw new Error('No quality options available');
+                }
+
+                const preferredHeights = [240, 360, 480, 720, 1080];
+                for (const h of preferredHeights) {
+                    const idx = qualities.findIndex(q => q.height === h);
+                    if (idx !== -1) {
+                        currentQualityIndex = idx;
+                        break;
+                    }
+                }
+
+                return qualities[currentQualityIndex].url;
+
+            } catch (error) {
+                console.error('Playlist fetch error:', error);
+                if (loadRetryCount < MAX_LOAD_RETRIES) {
+                    loadRetryCount++;
+                    showLoading(`Retrying... (${loadRetryCount}/${MAX_LOAD_RETRIES})`, true);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                    return await fetchPlaylist();
+                }
+                throw error;
+            }
+        }
+
+        async function loadVideoByIndex(index, isRecovery = false) {
+            const q = qualities[index];
+            if (!q) return;
+
+            if (!isRecovery) {
+                currentTime = video.currentTime || getSavedTime();
+                wasPlaying = !video.paused;
+            }
+            
+            currentQualityIndex = index;
+
+            if (hlsInstance) {
+                try { 
+                    hlsInstance.destroy(); 
+                } catch (e) {
+                    console.log('HLS destroy error:', e);
+                }
+                hlsInstance = null;
+            }
+
+            try {
+                if (Hls.isSupported()) {
+                    hlsInstance = new Hls({
+                        debug: false,
+                        enableWorker: true,
+                        lowLatencyMode: false,
+                        backBufferLength: 90,
+                        
+                        
+                        maxBufferLength: 60,
+                        maxMaxBufferLength: 120,
+                        maxBufferSize: 120 * 1000 * 1000,
+                        maxBufferHole: 0.5,
+                        
+                    
+                        highBufferWatchdogPeriod: 1,
+                        nudgeOffset: 0.1,
+                        nudgeMaxRetry: 5,
+                        
+                
+                        manifestLoadingTimeOut: 30000,
+                        manifestLoadingMaxRetry: 10,
+                        manifestLoadingRetryDelay: 1000,
+                        manifestLoadingMaxRetryTimeout: 64000,
+                        
+            
+                        levelLoadingTimeOut: 30000,
+                        levelLoadingMaxRetry: 10,
+                        levelLoadingRetryDelay: 1000,
+                        levelLoadingMaxRetryTimeout: 64000,
+                        
+                    
+                        fragLoadingTimeOut: 40000,
+                        fragLoadingMaxRetry: 20,
+                        fragLoadingRetryDelay: 1000,
+                        fragLoadingMaxRetryTimeout: 64000,
+                        
+                
+                        startPosition: currentTime || -1,
+                        
+                
+                        abrEwmaDefaultEstimate: 500000,
+                        abrBandWidthFactor: 0.95,
+                        abrBandWidthUpFactor: 0.7,
+                        
+                
+                        maxStarvationDelay: 4,
+                        maxLoadingDelay: 4,
+                        
+            
+                        xhrSetup: function(xhr, url) {
+                            xhr.withCredentials = false;
+                        }
+                    });
+                    
+                    hlsInstance.loadSource(q.url);
+                    hlsInstance.attachMedia(video);
+
+                
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                        console.log('Manifest parsed successfully');
+                        
+                        if (currentTime > 0) {
+                            video.currentTime = currentTime;
+                        }
+                        if (wasPlaying) {
+                            video.play().catch(e => console.log('Autoplay prevented'));
+                        }
+                        
+                        loadRetryCount = 0;
+                        globalRetryCount = 0;
+                        bufferStallCount = 0;
+                        mediaErrorCount = 0;
+                        
+                        hideLoading();
+                        startTimeSaver();
+                        startBufferMonitoring();
+                    });
+
+            
+                    hlsInstance.on(Hls.Events.BUFFER_APPENDED, () => {
+                        if (bufferStallCount > 0) bufferStallCount--;
+                    });
+
+                    hlsInstance.on(Hls.Events.FRAG_LOADED, () => {
+                        if (globalRetryCount > 0) globalRetryCount--;
+                    });
+
+            
+                    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                        console.error('HLS Error:', {
+                            type: data.type,
+                            details: data.details,
+                            fatal: data.fatal,
+                            reason: data.reason
+                        });
+                        
+                        if (data.fatal) {
+                            switch(data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    console.log('Network error detected');
+                                    
+                                    if (data.details === 'bufferStalledError') {
+                                        bufferStallCount++;
+                                        console.log(`Buffer stall count: ${bufferStallCount}/${MAX_BUFFER_STALLS}`);
+                                        
+                                        if (bufferStallCount < MAX_BUFFER_STALLS) {
+                                        
+                                            console.log('Attempting stall recovery...');
+                                            try {
+                                                hlsInstance.startLoad(video.currentTime);
+                                            } catch (e) {
+                                                console.log('Start load failed:', e);
+                                                if (!isRecovering) {
+                                                    setTimeout(() => recoverPlayback('buffer_stall'), 500);
+                                                }
+                                            }
+                                        } else {
+                                        
+                                            console.log('Too many buffer stalls, full recovery needed');
+                                            if (!isRecovering) {
+                                                recoverPlayback('buffer_stall_max');
+                                            }
+                                        }
+                                    } else {
+                                
+                                        console.log('Attempting network error recovery...');
+                                        try {
+                                            hlsInstance.startLoad();
+                                        } catch (e) {
+                                            if (!isRecovering) {
+                                                setTimeout(() => recoverPlayback('network'), 1000);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                    
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    console.log('Media error detected');
+                                    mediaErrorCount++;
+                                    
+                                    if (mediaErrorCount < MAX_MEDIA_ERRORS) {
+                                        console.log(`Attempting media error recovery (${mediaErrorCount}/${MAX_MEDIA_ERRORS})...`);
+                                        try {
+                                            hlsInstance.recoverMediaError();
+                                        } catch (e) {
+                                            console.log('Media recovery failed:', e);
+                                            if (!isRecovering) {
+                                                setTimeout(() => recoverPlayback('media'), 1000);
+                                            }
+                                        }
+                                    } else {
+                                        console.log('Too many media errors, full recovery needed');
+                                        if (!isRecovering) {
+                                            recoverPlayback('media_max');
+                                        }
+                                    }
+                                    break;
+                                    
+                                default:
+                                    console.log('Fatal error - initiating full recovery');
+                                    if (!isRecovering) {
+                                        setTimeout(() => recoverPlayback('fatal'), 2000);
+                                    }
+                                    break;
+                            }
+                        } else {
+                            // Non-fatal errors - log but continue
+                            console.log('Non-fatal error, continuing playback');
+                        }
+                    });
+
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = q.url;
+                    video.addEventListener('loadedmetadata', () => {
+                        if (currentTime > 0) {
+                            video.currentTime = currentTime;
+                        }
+                        if (wasPlaying) {
+                            video.play().catch(e => console.log('Autoplay prevented'));
+                        }
+                        hideLoading();
+                        startTimeSaver();
+                    }, { once: true });
+                    
+                    video.addEventListener('error', () => {
+                        if (!isRecovering) {
+                            recoverPlayback('video_error');
+                        }
+                    });
+                } else {
+                    throw new Error('Your browser does not support HLS playback');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                if (!isRecovering) {
+                    recoverPlayback('load_error');
+                }
+            }
+        }
+
+    
+        video.addEventListener('error', (e) => {
+            console.error('Video element error:', e);
+            if (!isRecovering) {
+                setTimeout(() => recoverPlayback('video_element'), 1000);
+            }
+        });
+
+    
+        video.addEventListener('stalled', () => {
+            console.warn('Video stalled event');
+            if (!isRecovering && hlsInstance) {
+                try {
+                    hlsInstance.startLoad(video.currentTime);
+                } catch (e) {
+                    console.log('Start load on stall failed');
+                }
+            }
+        });
+
+        
+        video.addEventListener('waiting', () => {
+            console.log('Video waiting for data');
+        });
+
+    
+        video.addEventListener('playing', () => {
+            console.log('Video playing');
+            if (bufferStallCount > 0) bufferStallCount = 0;
+        });
+
+        
+        window.addEventListener('online', () => {
+            console.log('Connection restored');
+            if (video.paused && !isRecovering) {
+                showLoading('Connection restored, reloading...');
+                recoverPlayback('connection_restored');
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('Connection lost');
+            showLoading('Connection lost, waiting to reconnect...');
+        });
+
+        async function showQualitySelection() {
+            if (isInFullscreen) {
+                await exitFullscreen();
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            qualityOptionsContainer.innerHTML = qualities.map((q, index) => {
+                const qualityLabel = q.height >= 720 ? 'HD Quality' : 
+                                    q.height >= 480 ? 'Standard Quality' : 
+                                    q.height >= 360 ? 'Medium Quality' : 'Basic Quality';
+                
+                return `
+                    <div class="quality-option" onclick="downloadWithQuality(${index})">
+                        <div class="quality-label">
+                            <div class="quality-icon">${q.height}p</div>
+                            <div class="quality-text-wrapper">
+                                <div class="quality-name">${q.height}p</div>
+                                <div class="quality-info">${qualityLabel}</div>
+                            </div>
+                        </div>
+                        <div class="quality-badge">SELECT</div>
+                    </div>
+                `;
+            }).join('');
+            
+            modalOverlay.classList.add('active');
+            qualityModal.classList.add('active');
+        }
+
+        window.downloadWithQuality = async function(qualityIndex) {
+            modalOverlay.classList.remove('active');
+            qualityModal.classList.remove('active');
+            
+            const selectedQuality = qualities[qualityIndex];
+            
+            try {
+                progressModal.classList.add('active');
+                progressTitle.textContent = 'Downloading...';
+                
+                const m3u8Response = await fetch(selectedQuality.url);
+                const m3u8Text = await m3u8Response.text();
+                
+                const segmentUrls = [];
+                const baseUrl = selectedQuality.url.substring(0, selectedQuality.url.lastIndexOf('/') + 1);
+                const lines = m3u8Text.split('\n');
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    if (line && !line.startsWith('#')) {
+                        const segmentUrl = line.startsWith('http') ? line : baseUrl + line;
+                        segmentUrls.push(segmentUrl);
+                    }
+                }
+                
+                if (segmentUrls.length === 0) {
+                    throw new Error('No video segments found');
+                }
+                
+                const segments = [];
+                for (let i = 0; i < segmentUrls.length; i++) {
+                    const response = await fetch(segmentUrls[i]);
+                    const blob = await response.blob();
+                    segments.push(blob);
+                    
+                    const progress = Math.round(((i + 1) / segmentUrls.length) * 100);
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = `${progress}%`;
+                }
+                
+                progressTitle.textContent = 'Processing...';
+                const mergedBlob = new Blob(segments, { type: 'video/mp2t' });
+                
+                const randomNum = Math.floor(Math.random() * 90000) + 10000;
+                const filename = `LEARNEX_${selectedQuality.height}p_${randomNum}.ts`;
+                
+                const url = URL.createObjectURL(mergedBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                fetch(`stream.php?action=cleanup&token=${encodeURIComponent(token)}`, {
+                    method: 'POST'
+                }).catch(() => {});
+                
+                progressModal.classList.remove('active');
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                progressModal.classList.remove('active');
+                alert('Download failed. Please try again.');
+            }
+        };
+
+    
+        try {
+            showLoading('Initializing player...');
+            await fetchPlaylist();
+            await loadVideoByIndex(currentQualityIndex);
+
+        } catch (error) {
+            console.error('Initialization error:', error);
+            updateLoadingText('Failed to load video. Retrying...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+            return;
+        }
+
+        
+        player = new Plyr(video, {
+            controls: [
+                'play-large',
+                'rewind',
+                'play',
+                'fast-forward',
+                'progress',
+                'current-time',
+                'duration',
+                'mute',
+                'volume',
+                'download',
+                'settings',
+                'fullscreen',
+            ],
+            settings: ['quality', 'speed'],
+            quality: {
+                default: qualities[currentQualityIndex]?.height || 240,
+                options: qualities.map(q => q.height).filter(h => h != null),
+                forced: true,
+                onChange: function(newQuality) {
+                    const index = qualities.findIndex(q => q.height === newQuality);
+                    if (index !== -1 && index !== currentQualityIndex) {
+                        showLoading('Changing quality...');
+                        loadVideoByIndex(index);
+                    }
+                }
+            },
+            speed: { 
+                selected: 1, 
+                options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 3.5, 4, 4.5, 5] 
+            },
+            tooltips: { controls: true, seek: true },
+        });
+
+        setTimeout(() => {
+            const downloadBtn = document.querySelector('[data-plyr="download"]');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showQualitySelection();
+                });
+            }
+        }, 1000);
+
+        player.on('enterfullscreen', async (event) => {
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape').catch(err => {
+                        console.log('Orientation lock not supported');
+                    });
+                }
+            } catch (error) {
+                console.log('Screen orientation API not available');
+            }
+        });
+
+        player.on('exitfullscreen', async (event) => {
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch (error) {
+                console.log('Screen orientation unlock error');
+            }
+        });
+
+        
+        window.addEventListener('beforeunload', () => {
+            if (timeUpdateInterval) clearInterval(timeUpdateInterval);
+            if (bufferCheckInterval) clearInterval(bufferCheckInterval);
+            if (hlsInstance) {
+                try {
+                    hlsInstance.destroy();
+                } catch (e) {}
+            }
+        });
+
+    });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4d42689b8b57448eadca12d9037c095e","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
