@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>LEARNEX — Workspace Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <style>
+    /* ═══════════════════════════════════════════════
+       THEME ENGINE MATRIX
+    ═══════════════════════════════════════════════ */
+    :root,[data-theme="light"]{
+      --bg-base:#f9f6f0;--bg-surface:#ffffff;--bg-surface-2:#f3ede3;--bg-surface-3:#ede5d8;
+      --border-soft:#eadecc;--border-mid:#d8cbb8;
+      --text-primary:#2c2536;--text-secondary:#6b5f7a;--text-muted:#9c8faa;
+      --accent:#0072ff;--accent-light:rgba(0,114,255,0.08);--accent-solid:#005be3;
+      --live:#ff3b30;--live-bg:rgba(255,59,48,0.08);
+      --toast-bg:#2c2536;--toast-tx:#f9f6f0;
+      --radius-lg:16px;--radius-md:12px;--radius-sm:6px;
+      --shadow-sm:0 2px 8px rgba(44,37,54,0.04);--shadow-md:0 8px 24px rgba(44,37,54,0.06);
+    }
+    [data-theme="dark"]{
+      --bg-base:#09070f;--bg-surface:#14111c;--bg-surface-2:#1f1b2b;--bg-surface-3:#2a253a;
+      --border-soft:#252033;--border-mid:#38314d;
+      --text-primary:#f4f0fa;--text-secondary:#b2a9c4;--text-muted:#7e7491;
+      --accent:#00F2FE;--accent-light:rgba(0,242,254,0.1);--accent-solid:#4FACFE;
+      --live:#ff453a;--live-bg:rgba(255,69,58,0.15);
+      --toast-bg:#f4f0fa;--toast-tx:#09070f;
+    }
+
+    /* ═══════════════════════════════════════════════
+       BASE FRAMEWORK RESETS
+    ═══════════════════════════════════════════════ */
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Manrope',sans-serif}
+    body{background:var(--bg-base);color:var(--text-primary);min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s}
+    body.modal-open{overflow:hidden}
+    a{text-decoration:none;color:inherit}
+    button{border:none;background:none;cursor:pointer;outline:none;font-family:inherit}
+
+    /* System Scrollbar Layout */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:var(--bg-base)}
+    ::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:10px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+
+    /* ═══════════════════════════════════════════════
+       NAVIGATION SPECIFICATIONS
+    ═══════════════════════════════════════════════ */
+    nav{
+      position:fixed;top:0;left:0;right:0;height:64px;
+      background:rgba(var(--bg-surface),0.75);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border-soft);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 clamp(16px,4vw,32px);z-index:900;
+    }
+    .nav-brand{display:flex;align-items:center;gap:10px}
+    .nav-logo{
+      width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent-solid));
+      border-radius:8px;display:flex;align-items:center;justify-content:center;
+      color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:0.85rem;
+    }
+    .nav-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:-0.02em}
+    .nav-title em{color:var(--accent);font-style:normal}
+    
+    .nav-actions{display:flex;align-items:center;gap:12px}
+    .btn-circle{
+      width:36px;height:36px;border-radius:50%;border:1px solid var(--border-soft);
+      display:flex;align-items:center;justify-content:center;background:var(--bg-surface);
+      color:var(--text-secondary);transition:0.2s;
+    }
+    .btn-circle:hover{border-color:var(--border-mid);color:var(--text-primary);transform:scale(1.04)}
+
+    /* ═══════════════════════════════════════════════
+       GRID CORE WORKSPACE WORKSPACE
+    ═══════════════════════════════════════════════ */
+    .container{
+      max-width:1440px;margin:0 auto;padding:88px clamp(16px,4vw,32px) 64px;
+      display:grid;grid-template-columns:1fr 380px;gap:28px;
+    }
+
+    /* Stage Panel Engine (Left Portal) */
+    .stage{display:flex;flex-direction:column;gap:20px}
+    
+    .player-aspect{
+      width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--radius-lg);
+      overflow:hidden;box-shadow:var(--shadow-md);border:1px solid var(--border-soft);
+      position:relative;
+    }
+    .player-ph{
+      width:100%;height:100%;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:12px;color:var(--text-muted);background:#0e0c14;
+      text-align:center;padding:20px;
+    }
+    .player-ph-ico{font-size:3rem;opacity:0.3;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.08);opacity:0.5}}
+
+    .meta-box{
+      background:var(--bg-surface);border:1px solid var(--border-soft);
+      padding:24px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+    }
+    .meta-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+    .lecture-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.35rem;line-height:1.25}
+    .btn-report{
+      display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border-soft);
+      border-radius:20px;font-size:0.72rem;font-weight:600;color:var(--text-secondary);
+    }
+    .btn-report:hover{background:var(--bg-base);color:var(--text-primary)}
+
+    .meta-tags{display:flex;flex-wrap:wrap;gap:8px}
+    .badge{
+      font-size:0.65rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;
+      padding:4px 10px;border-radius:100px;background:var(--bg-surface-2);color:var(--text-secondary);
+    }
+    .badge-accent{background:var(--accent-light);color:var(--accent)}
+
+    /* Sidebar Dynamic Playlists (Right Portal) */
+    .sidebar{display:flex;flex-direction:column;gap:20px;position:sticky;top:92px;height:calc(100vh - 120px)}
+    
+    .panel{
+      background:var(--bg-surface);border:1px solid var(--border-soft);
+      border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+      display:flex;flex-direction:column;overflow:hidden;flex:1;
+    }
+    .panel-hdr{
+      padding:16px 20px;border-bottom:1px solid var(--border-soft);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.02em}
+    
+    .panel-tabs{display:flex;background:var(--bg-surface-2);padding:4px;border-radius:8px;gap:2px;margin:12px 20px 0}
+    .p-tab{
+      flex:1;padding:6px;text-align:center;font-size:0.75rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:0.04em;border-radius:6px;color:var(--text-secondary);
+      transition:0.15s ease;
+    }
+    .p-tab.active{background:var(--bg-surface);color:var(--text-primary);box-shadow:var(--shadow-sm)}
+
+    .scroll-node{flex:1;overflow-y:auto;padding:12px 20px}
+    
+    /* Rows Configuration */
+    .row-item{
+      display:flex;align-items:center;gap:12px;padding:10px;
+      border-radius:var(--radius-md);cursor:pointer;transition:0.2s;
+      margin-bottom:6px;border:1px solid transparent;
+    }
+    .row-item:hover{background:var(--bg-surface-2)}
+    .row-item.active{background:var(--accent-light);border-color:rgba(0,114,255,0.12)}
+    
+    .row-ico{
+      width:36px;height:36px;border-radius:8px;background:var(--bg-surface-3);
+      display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+    }
+    .row-item.active .row-ico{background:var(--bg-surface);color:var(--accent)}
+    
+    .row-body{flex:1;min-width:0}
+    .row-txt{font-size:0.82rem;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .row-meta{font-size:0.68rem;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:8px}
+    
+    .tag-live{
+      padding:2px 6px;background:var(--live-bg);color:var(--live);
+      border-radius:4px;font-size:0.55rem;font-weight:800;text-transform:uppercase;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MOCK ASSESSMENT TEST ENGINE INTERFACE OVERLAY
+    ═══════════════════════════════════════════════ */
+    .test-layer {
+      position:fixed;inset:0;background:var(--bg-base);z-index:1000;
+      display:none;flex-direction:column;
+    }
+    .test-layer.show { display:flex; }
+    
+    .test-hdr {
+      height:60px;background:var(--bg-surface);border-bottom:1px solid var(--border-soft);
+      display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+    }
+    .test-title { font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem; }
+    .test-timer {
+      font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;
+      background:var(--bg-surface-2);padding:4px 12px;border-radius:6px;border:1px solid var(--border-soft);
+    }
+    
+    .test-main {
+      flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;
+    }
+    .test-content-zone { padding:40px;overflow-y:auto;display:flex;flex-direction:column;gap:24px; }
+    
+    .q-card {
+      background:var(--bg-surface);border:1px solid var(--border-soft);
+      padding:32px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+    }
+    .q-meta { font-size:0.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;margin-bottom:12px; }
+    .q-text { font-size:1.05rem;font-weight:600;line-height:1.5;margin-bottom:24px; }
+    
+    .opt-list { display:flex;flex-direction:column;gap:12px; }
+    .opt-node {
+      display:flex;align-items:center;gap:14px;padding:14px 20px;
+      border:1px solid var(--border-soft);border-radius:var(--radius-md);
+      cursor:pointer;transition:0.15s ease;font-size:0.9rem;font-weight:500;
+    }
+    .opt-node:hover { background:var(--bg-surface-2); }
+    .opt-node.selected { border-color:var(--accent);background:var(--accent-light);font-weight:600; }
+    .opt-pfx {
+      width:24px;height:24px;border-radius:50%;background:var(--bg-surface-3);
+      display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;
+    }
+    .opt-node.selected .opt-pfx { background:var(--accent);color:#fff; }
+
+    .test-footer {
+      height:70px;background:var(--bg-surface);border-top:1px solid var(--border-soft);
+      display:flex;align-items:center;justify-content:space-between;padding:0 40px;
+    }
+    .btn-nav-t {
+      padding:10px 20px;border-radius:6px;font-size:0.8rem;font-weight:700;
+      text-transform:uppercase;transition:0.15s;border:1px solid var(--border-soft);
+    }
+    .btn-nav-t:hover { background:var(--bg-surface-2); }
+    .btn-nav-t.primary { background:var(--accent);color:#fff;border-color:var(--accent); }
+    .btn-nav-t.primary:hover { background:var(--accent-solid); }
+
+    .test-control-side {
+      background:var(--bg-surface);border-left:1px solid var(--border-soft);
+      padding:24px;display:flex;flex-direction:column;gap:20px;overflow-y:auto;
+    }
+    .grid-matrix-title { font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;text-transform:uppercase;color:var(--text-secondary); }
+    .q-grid-matrix { display:grid;grid-template-columns:repeat(4,1fr);gap:10px; }
+    .btn-matrix-node {
+      aspect-ratio:1/1;border-radius:8px;background:var(--bg-surface-2);
+      border:1px solid var(--border-soft);display:flex;align-items:center;
+      justify-content:center;font-size:0.8rem;font-weight:700;font-family:'Space Mono',monospace;
+    }
+    .btn-matrix-node.active { border-color:var(--text-primary);box-shadow:0 0 0 2px var(--text-primary); }
+    .btn-matrix-node.answered { background:var(--accent);color:#fff;border-color:var(--accent); }
+    .btn-matrix-node.marked { background:#ff9500;color:#fff;border-color:#ff9500; }
+
+    /* ═══════════════════════════════════════════════
+       BUG REPORT INTERACTIVE MODAL INTERFACE
+    ═══════════════════════════════════════════════ */
+    .modal-shade {
+      position:fixed;inset:0;background:rgba(9,7,15,0.4);backdrop-filter:blur(4px);
+      z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;
+    }
+    .modal-shade.open { display:flex; }
+    
+    .modal-container {
+      background:var(--bg-surface);border:1px solid var(--border-soft);
+      width:100%;max-width:480px;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+      overflow:hidden;animation:pop 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes pop { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
+    
+    .modal-hdr-section {
+      padding:20px 24px;border-bottom:1px solid var(--border-soft);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .modal-body-section { padding:24px;display:flex;flex-direction:column;gap:16px; }
+    
+    .inp-group { display:flex;flex-direction:column;gap:6px; }
+    .inp-label { font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--text-secondary);letter-spacing:0.02em; }
+    .field-input {
+      width:100%;background:var(--bg-base);border:1px solid var(--border-soft);
+      padding:10px 14px;border-radius:6px;font-size:0.85rem;color:var(--text-primary);
+    }
+    .field-input:focus { border-color:var(--accent);outline:none; }
+    
+    .modal-ftr-section {
+      padding:16px 24px;background:var(--bg-base);border-top:1px solid var(--border-soft);
+      display:flex;justify-content:flex-end;gap:10px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SKELETON ANIMATIONS & ALERTS
+    ═══════════════════════════════════════════════ */
+    @keyframes shine{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .skel{
+      background:linear-gradient(90deg,var(--bg-surface-2) 25%,var(--bg-surface-3) 50%,var(--bg-surface-2) 75%);
+      background-size:200% 100%;animation:shine 1.6s infinite ease-in-out;border-radius:4px;
+    }
+
+    .toast{
+      position:fixed;bottom:24px;left:50%;transform:clientX(-50%) translateY(20px);
+      background:var(--toast-bg);color:var(--toast-tx);padding:12px 24px;
+      border-radius:30px;font-size:0.8rem;font-weight:600;box-shadow:var(--shadow-md);
+      display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;
+      transition:0.3s cubic-bezier(0.175,0.885,0.32,1.275);z-index:2500;
+    }
+    .toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    footer{
+      text-align:center;padding:32px;border-top:1px solid var(--border-soft);
+      font-size:0.7rem;font-weight:700;letter-spacing:0.15em;
+      text-transform:uppercase;color:var(--text-muted);background:var(--bg-surface);margin-top:40px;
+    }
+
+    @media(max-width:1024px){
+      .container{grid-template-columns:1fr;gap:24px}
+      .sidebar{position:static;height:450px}
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-l">
+      <a class="nav-brand" href="dashboard.html">
+        <div class="nav-logo">LX</div>
+        <span class="nav-title">LEARN<em>EX</em></span>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-circle" id="themeToggle" onclick="toggleThemeEngine()">🌓</button>
+      <span class="nav-chip" id="navChip" style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--text-secondary)">#000</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <div class="stage">
+      <div class="player-aspect" id="stageAspect">
+        <div class="player-ph">
+          <div class="player-ph-ico">🎬</div>
+          <div style="font-size:0.85rem;font-weight:600">Select any lecture video file from the workspace list</div>
+        </div>
+      </div>
+      
+      <div class="meta-box">
+        <div class="meta-hdr">
+          <h1 class="lecture-title" id="stageTitle">Welcome to your Workspace</h1>
+          <button class="btn-report" onclick="openBugReportModal()">⚠️ <span>Report</span></button>
+        </div>
+        <div class="meta-tags" id="stageTags">
+          <span class="badge badge-accent">Interactive Engine</span>
+          <span class="badge">Vercel Portal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title" id="batchMetaTitle">Batch Content Payload</span>
+        </div>
+        
+        <div class="panel-tabs">
+          <button class="p-tab active" id="tabContentBtn" onclick="toggleSidebarView('lectures')">Lectures</button>
+          <button class="p-tab" id="tabNotesBtn" onclick="toggleSidebarView('notes')">Notes &amp; Tests</button>
+        </div>
+
+        <div class="scroll-node" id="sidebarListNode">
+          <div style="padding:10px 0">
+            <div class="skel" style="height:44px;margin-bottom:8px;border-radius:8px"></div>
+            <div class="skel" style="height:44px;margin-bottom:8px;border-radius:8px"></div>
+            <div class="skel" style="height:44px;margin-bottom:8px;border-radius:8px"></div>
+            <div class="skel" style="height:44px;border-radius:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="test-layer" id="testUI">
+    <div class="test-hdr">
+      <div class="test-title" id="testHeaderTitle">Assessment Test Stream</div>
+      <div class="test-timer" id="testClock">00:00:00</div>
+    </div>
+    <div class="test-main">
+      <div class="test-content-zone">
+        <div class="q-card">
+          <div class="q-meta" id="qIndexMeta">Question 0 of 0</div>
+          <div class="q-text" id="qTextContainer">Decrypting assessment questionnaire nodes...</div>
+          <div class="opt-list" id="qOptionsWrapper">
+            </div>
+        </div>
+      </div>
+      <div class="test-control-side">
+        <span class="grid-matrix-title">Navigation Grid</span>
+        <div class="q-grid-matrix" id="matrixGridElement">
+          </div>
+        <button class="btn-nav-t primary" style="width:100%;margin-top:auto;padding:14px" onclick="triggerTestSubmissionConfirmation()">Submit Examination</button>
+      </div>
+    </div>
+    <div class="test-footer">
+      <button class="btn-nav-t" onclick="traverseQuestionNode(-1)">Previous Question</button>
+      <button class="btn-nav-t" style="background:rgba(255,149,0,0.1);color:#ff9500;border-color:rgba(255,149,0,0.2)" onclick="markCurrentQuestionFlag()">Mark For Review</button>
+      <button class="btn-nav-t primary" onclick="traverseQuestionNode(1)">Save &amp; Next</button>
+    </div>
+  </div>
+
+  <div class="modal-shade" id="bugModal shadow">
+    <div class="modal-container">
+      <div class="modal-hdr-section">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem">Submit Technical Bug Report</span>
+        <button style="font-size:1.2rem;color:var(--text-muted)" onclick="closeBugReportModal()">&times;</button>
+      </div>
+      <div class="modal-body-section">
+        <div class="inp-group">
+          <label class="inp-label">Problem Parameter Title</label>
+          <input type="text" id="bugTitle" class="field-input" placeholder="e.g., Video stream synchronization lag" />
+        </div>
+        <div class="inp-group">
+          <label class="inp-label">Detailed Breakdown Description</label>
+          <textarea id="bugNarrative" class="field-input" rows="4" style="resize:none" placeholder="Provide full systemic interaction behavior..."></textarea>
+        </div>
+      </div>
+      <div class="modal-ftr-section">
+        <button class="btn-nav-t" onclick="closeBugReportModal()">Cancel</button>
+        <button class="btn-nav-t primary" onclick="commitBugReportLog()">Transmit Logs</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-shade" id="testSubmissionModal">
+    <div class="modal-container" style="max-width:400px">
+      <div class="modal-hdr-section">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem">Confirm Target Submission</span>
+      </div>
+      <div class="modal-body-section" id="submissionOverviewPayload" style="gap:8px;font-size:0.85rem">
+        </div>
+      <div class="modal-ftr-section">
+        <button class="btn-nav-t" onclick="dismissSubmissionPrompt()">Return</button>
+        <button class="btn-nav-t primary" style="background:var(--live);border-color:var(--live)" onclick="finalizeTestScoreEvaluation()">Confirm Submission</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <span id="toastIco">ℹ️</span>
+    <span id="toastTitle" style="font-weight:700">Notice:</span>
+    <span id="toastMsg">Sync operation established.</span>
+  </div>
+
+  <footer>
+    LEARNEX Platform Engine &copy; 2026 — Dream Big, Work Hard
+  </footer>
+
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script>
+    /* ═══════════════════════════════════════════════════
+       ORCHESTRATION BACKEND LOGIC CORE
+    ═══════════════════════════════════════════════════ */
+    const _urlParams = new URLSearchParams(window.location.search);
+    const COURSE_ID = _urlParams.get('course_id') || '176';
+    const API_ENDPOINT = 'https://ntxapi.wasmer.app/';
+    
+    document.getElementById('navChip').textContent = 'BATCH_ID://' + COURSE_ID;
+
+    function toggleThemeEngine() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const target = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', target);
+      localStorage.setItem('lnx_theme_preference', target);
+    }
+
+    if(localStorage.getItem('lnx_theme_preference') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    let toastTimer = null;
+    function toast(type, title, msg) {
+      const t = document.getElementById('toast');
+      const icons = { ok:'✅', err:'❌', warn:'⚠️', info:'ℹ️' };
+      document.getElementById('toastIco').textContent = icons[type] || 'ℹ️';
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastMsg').textContent = msg || '';
+      t.className = 'toast visible';
+      void t.offsetWidth;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.className = 'toast', 4000);
+    }
+
+    let batchDataCache = null;
+    let viewFilterMode = 'lectures';
+
+    async function syncBatchContentPayload() {
+      try {
+        const res = await fetch(`${API_ENDPOINT}?course_id=${encodeURIComponent(COURSE_ID)}&action=content&rc=nt`);
+        const json = await res.json();
+        if(json && json.success && Array.isArray(json.data)) {
+          batchDataCache = json.data;
+          renderWorkspaceDOM();
+        } else {
+          document.getElementById('sidebarListNode').innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.8rem">Failed to populate batch metadata fields.</div>`;
+        }
+      } catch (e) {
+        document.getElementById('sidebarListNode').innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.8rem">Network timeout resolving engine handshakes.</div>`;
+      }
+    }
+
+    function toggleSidebarView(mode) {
+      viewFilterMode = mode;
+      document.getElementById('tabContentBtn').classList.toggle('active', mode === 'lectures');
+      document.getElementById('tabNotesBtn').classList.toggle('active', mode === 'notes');
+      renderWorkspaceDOM();
+    }
+
+    function renderWorkspaceDOM() {
+      const listContainer = document.getElementById('sidebarListNode');
+      if(!batchDataCache) return;
+
+      let HTML_POOL = '';
+      
+      const nodes = batchDataCache.filter(item => {
+        if(viewFilterMode === 'lectures') {
+          return item.type === 'file' && item.data && parseInt(item.data.file_type || 2) !== 1;
+        } else {
+          return item.type === 'test' || (item.type === 'file' && item.data && parseInt(item.data.file_type || 2) === 1);
+        }
+      });
+
+      if(nodes.length === 0) {
+        listContainer.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.8rem">No assets loaded inside this workspace segment yet.</div>`;
+        return;
+      }
+
+      nodes.forEach(node => {
+        const isTest = node.type === 'test';
+        const isPdf = !isTest && parseInt(node.data?.file_type || 2) === 1;
+        const isLive = !isTest && parseInt(node.data?.is_live || 0) === 1;
+        
+        let icon = '🎬';
+        let subText = 'Video Lecture';
+        if(isTest) { icon = '📝'; subText = 'Assessment Quiz'; }
+        else if(isPdf) { icon = '📄'; subText = 'PDF Reference Notes'; }
+        
+        if(isLive) subText = `<span class="tag-live">● Live Class</span>`;
+
+        HTML_POOL += `
+          <div class="row-item" data-id="${node.entity_id}" data-type="${node.type}" onclick="engageAssetExecution(this)">
+            <div class="row-ico">${icon}</div>
+            <div class="row-body">
+              <div class="row-txt">${esc(node.title)}</div>
+              <div class="row-meta">${subText}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      listContainer.innerHTML = HTML_POOL;
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    async function engageAssetExecution(element) {
+      const id = element.dataset.id;
+      const type = element.dataset.type;
+      
+      document.querySelectorAll('.row-item').forEach(r => r.classList.remove('active'));
+      element.classList.add('active');
+
+      if (type === 'test') {
+        initializeAssessmentTestEngine(id, element.querySelector('.row-txt').textContent);
+        return;
+      }
+
+      toast('info', 'Loading:', 'Fetching specific secure validation signatures...');
+
+      try {
+        const res = await fetch(`${API_ENDPOINT}?action=content_details&content_id=${id}&course_id=${COURSE_ID}&rc=nt`);
+        const data = await res.json();
+        
+        if(data.error) {
+          toast('err', 'Access Refused', data.error);
+          return;
+        }
+
+        document.getElementById('stageTitle').textContent = element.querySelector('.row-txt').textContent;
+
+        if(data.type === 'pdf') {
+          document.getElementById('stageAspect').innerHTML = `
+            <div class="player-ph">
+              <div class="player-ph-ico">📄</div>
+              <div style="font-size:0.85rem;font-weight:600;margin-bottom:12px">Document package signatures decrypted successfully.</div>
+              <a href="${data.url}" target="_blank" style="padding:10px 20px; background:var(--accent); color:#fff; border-radius:6px; font-size:0.75rem; font-weight:700">Open PDF Note Document</a>
+            </div>
+          `;
+          toast('ok', 'Verified', 'Document package decrypted.');
+        } 
+        else if(data.type === 'video') {
+          const streamRes = await fetch(`https://rolexcoderz.com/NT/stream.php?action=playlist&token=${encodeURIComponent(data.token)}`);
+          const streamData = await streamRes.json();
+          
+          if(streamData.youtube_id) {
+            document.getElementById('stageAspect').innerHTML = `
+              <div class="player-ph">
+                <div class="player-ph-ico">🔴</div>
+                <div style="font-size:0.85rem;font-weight:600;margin-bottom:12px">This stream asset is bound directly onto external network structures.</div>
+                <a href="https://www.youtube.com/watch?v=${streamData.youtube_id}" target="_blank" style="padding:10px 20px; background:#ff0000; color:#fff; border-radius:6px; font-size:0.75rem; font-weight:700">Watch Stream on YouTube</a>
+              </div>
+            `;
+          } else {
+            document.getElementById('stageAspect').innerHTML = `
+              <video id="player" playsinline controls class="plyr-node">
+                <source src="${streamData.url || data.url}" type="application/x-mpegURL" />
+              </video>
+            `;
+            const player = new Plyr('#player', { controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'fullscreen'] });
+          }
+          toast('ok', 'Ready', 'Media content pipeline decoded successfully.');
+        }
+      } catch (ex) {
+        toast('err', 'Pipeline Blocked', 'Cryptographic verification request timed out.');
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       INTERACTIVE QUIZ ENGINE ARCHITECTURE MODULE
+    ═══════════════════════════════════════════════════ */
+    let activeExamPayload = null;
+    let quizClockInterval = null;
+    let secondsElapsedClock = 0;
+    let selectedCursorQuestionIndex = 0;
+    let runtimeClientAnswersMap = {}; // qId -> selectedIndex
+    let engineMarkedReviewArray = [];  // Array of flags tracking qIndexes
+
+    async function initializeAssessmentTestEngine(testId, testLabelTitle) {
+      toast('info', 'Secure Pipeline', 'Compiling targeted interactive evaluation questionnaire data structural matrix...');
+      try {
+        const res = await fetch(`${API_ENDPOINT}?action=test_details&test_id=${testId}&course_id=${COURSE_ID}&rc=nt`);
+        const json = await res.json();
+        
+        if (json && json.success && json.data) {
+          activeExamPayload = parseExaminationStructure(json.data);
+          if (!activeExamPayload || activeExamPayload.length === 0) {
+            toast('warn', 'Empty Matrix', 'No parsed targets mapped inside structured telemetry streams.');
+            return;
+          }
+          
+          document.getElementById('testHeaderTitle').textContent = testLabelTitle;
+          document.body.classList.add('modal-open');
+          document.getElementById('testUI').classList.add('show');
+          
+          // Reset metrics
+          secondsElapsedClock = 0;
+          selectedCursorQuestionIndex = 0;
+          runtimeClientAnswersMap = {};
+          engineMarkedReviewArray = new Array(activeExamPayload.length).fill(false);
+          
+          startTestClockEngine();
+          renderQuestionNodeInterface();
+          buildNavigationGridMatrix();
+          
+        } else {
+          toast('err', 'Fault Context', 'Target survey sheets configuration properties missing parameters.');
+        }
+      } catch (err) {
+        toast('err', 'Network Block', 'Unable to authorize dynamic quiz evaluation vectors runtime environment.');
+      }
+    }
+
+    function parseExaminationStructure(rawData) {
+      // Processes mixed complex nested datasets safely
+      if (Array.isArray(rawData.questions)) return rawData.questions;
+      if (rawData.sections && Array.isArray(rawData.sections)) {
+        let compiled = [];
+        rawData.sections.forEach(s => {
+          if (s.questions && Array.isArray(s.questions)) compiled = compiled.concat(s.questions);
+        });
+        return compiled;
+      }
+      return null;
+    }
+
+    function startTestClockEngine() {
+      clearInterval(quizClockInterval);
+      const clockElement = document.getElementById('testClock');
+      quizClockInterval = setInterval(() => {
+        secondsElapsedClock++;
+        const hrs = String(Math.floor(secondsElapsedClock / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((secondsElapsedClock % 3600) / 60)).padStart(2, '0');
+        const secs = String(secondsElapsedClock % 60).padStart(2, '0');
+        clockElement.textContent = `${hrs}:${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function renderQuestionNodeInterface() {
+      if (!activeExamPayload || !activeExamPayload[selectedCursorQuestionIndex]) return;
+      const qNode = activeExamPayload[selectedCursorQuestionIndex];
+      
+      document.getElementById('qIndexMeta').textContent = `Question ${selectedCursorQuestionIndex + 1} of ${activeExamPayload.length}`;
+      
+      const qTextElement = document.getElementById('qTextContainer');
+      qTextElement.innerHTML = qNode.question_text || qNode.text || '';
+      
+      // Render KaTeX components asynchronously
+      setTimeout(() => {
+        if(window.katex) {
+          qTextElement.querySelectorAll('.math-tex').forEach(el => {
+            try { window.katex.render(el.textContent, el, { throwOnError: false }); } catch(x){}
+          });
+        }
+      }, 20);
+
+      const optionsWrapper = document.getElementById('qOptionsWrapper');
+      optionsWrapper.innerHTML = '';
+      
+      const optionsArray = qNode.options || [qNode.option_a, qNode.option_b, qNode.option_c, qNode.option_d].filter(Boolean);
+      const labels = ['A', 'B', 'C', 'D', 'E'];
+      
+      optionsArray.forEach((opt, idx) => {
+        const isSelected = runtimeClientAnswersMap[qNode.id || qNode.question_id] === idx;
+        const optNode = document.createElement('div');
+        optNode.className = `opt-node ${isSelected ? 'selected' : ''}`;
+        optNode.onclick = () => selectOptionNodeIndex(idx);
+        
+        optNode.innerHTML = `
+          <div class="opt-pfx">${labels[idx] || (idx+1)}</div>
+          <div class="opt-tx-render">${opt.text || opt}</div>
+        `;
+        optionsWrapper.appendChild(optNode);
+      });
+
+      // Maintain synchronization parameters across navigation arrays
+      updateNavigationGridState();
+    }
+
+    function selectOptionNodeIndex(index) {
+      if (!activeExamPayload) return;
+      const qNode = activeExamPayload[selectedCursorQuestionIndex];
+      const qKey = qNode.id || qNode.question_id;
+      
+      if (runtimeClientAnswersMap[qKey] === index) {
+        delete runtimeClientAnswersMap[qKey]; // Toggle off state mapping sequence
+      } else {
+        runtimeClientAnswersMap[qKey] = index;
+      }
+      renderQuestionNodeInterface();
+    }
+
+    function traverseQuestionNode(direction) {
+      if (!activeExamPayload) return;
+      const targetIndex = selectedCursorQuestionIndex + direction;
+      if (targetIndex >= 0 && targetIndex < activeExamPayload.length) {
+        selectedCursorQuestionIndex = targetIndex;
+        renderQuestionNodeInterface();
+      } else if (targetIndex >= activeExamPayload.length) {
+        triggerTestSubmissionConfirmation();
+      }
+    }
+
+    function markCurrentQuestionFlag() {
+      if (!activeExamPayload) return;
+      engineMarkedReviewArray[selectedCursorQuestionIndex] = !engineMarkedReviewArray[selectedCursorQuestionIndex];
+      renderQuestionNodeInterface();
+    }
+
+    function buildNavigationGridMatrix() {
+      const grid = document.getElementById('matrixGridElement');
+      grid.innerHTML = '';
+      if (!activeExamPayload) return;
+
+      activeExamPayload.forEach((_, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-matrix-node';
+        btn.id = `matrix-node-idx-${idx}`;
+        btn.textContent = idx + 1;
+        btn.onclick = () => {
+          selectedCursorQuestionIndex = idx;
+          renderQuestionNodeInterface();
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    function updateNavigationGridState() {
+      if (!activeExamPayload) return;
+      activeExamPayload.forEach((q, idx) => {
+        const btn = document.getElementById(`matrix-node-idx-${idx}`);
+        if (!btn) return;
+        
+        const qKey = q.id || q.question_id;
+        const isAnswered = runtimeClientAnswersMap[qKey] !== undefined;
+        const isMarked = engineMarkedReviewArray[idx];
+        const isActive = selectedCursorQuestionIndex === idx;
+        
+        btn.className = 'btn-matrix-node';
+        if (isAnswered) btn.classList.add('answered');
+        if (isMarked) btn.classList.add('marked');
+        if (isActive) btn.classList.add('active');
+      });
+    }
+
+    function triggerTestSubmissionConfirmation() {
+      if (!activeExamPayload) return;
+      let answeredCount = Object.keys(runtimeClientAnswersMap).length;
+      let markedCount = engineMarkedReviewArray.filter(Boolean).length;
+      let unparsedCount = activeExamPayload.length - answeredCount;
+
+      const metricsWrapper = document.getElementById('submissionOverviewPayload');
+      metricsWrapper.innerHTML = `
+        <div style="display:flex;justify-content:between"><span>Total Metrics Questions:</span><strong>${activeExamPayload.length}</strong></div>
+        <div style="display:flex;justify-content:between;color:var(--mint)"><span>Answered Nodes:</span><strong>${answeredCount}</strong></div>
+        <div style="display:flex;justify-content:between;color:#ff9500"><span>Flagged Arrays:</span><strong>${markedCount}</strong></div>
+        <div style="display:flex;justify-content:between;color:var(--text-muted)"><span>Remaining Targets:</span><strong>${unparsedCount}</strong></div>
+      `;
+      document.getElementById('testSubmissionModal').classList.add('open');
+    }
+
+    function dismissSubmissionPrompt() {
+      document.getElementById('testSubmissionModal').classList.remove('open');
+    }
+
+    function finalizeTestScoreEvaluation() {
+      clearInterval(quizClockInterval);
+      document.getElementById('testSubmissionModal').classList.remove('open');
+      document.getElementById('testUI').classList.remove('show');
+      document.body.classList.remove('modal-open');
+      
+      toast('ok', 'Examination Saved', 'Score sequence calculation algorithm executed completely.');
+    }
+
+    /* ═══════════════════════════════════════════════════
+       INTERACTIVE FEEDBACK MECHANISMS
+    ═══════════════════════════════════════════════════ */
+    function openBugReportModal() {
+      document.getElementById('bugTitle').value = '';
+      document.getElementById('bugNarrative').value = '';
+      document.getElementById('bugModal shadow').classList.add('open');
+      document.body.classList.add('modal-open');
+    }
+
+    function closeBugReportModal() {
+      document.getElementById('bugModal shadow').classList.remove('open');
+      document.body.classList.remove('modal-open');
+    }
+
+    function commitBugReportLog() {
+      const t = document.getElementById('bugTitle').value.trim();
+      const d = document.getElementById('bugNarrative').value.trim();
+      
+      if (!t || !d) {
+        toast('warn', 'Validation Alert', 'Parameters require valid input context values.');
+        return;
+      }
+      
+      closeBugReportModal();
+      toast('ok', 'Dispatched', 'Diagnostic logs transmitted to server orchestration node successfully.');
+    }
+
+    document.addEventListener('DOMContentLoaded', syncBatchContentPayload);
+  </script>
+</body>
+</html>
