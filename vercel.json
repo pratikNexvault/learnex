@@ -1,8 +1,8 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/admin",      "destination": "/adminlog0.html" },
-    { "source": "/admin/",     "destination": "/adminlog0.html" },
+    { "source": "/adminpanel", "destination": "/console.html" },
+    { "source": "/adminpanel/", "destination": "/console.html" },
     { "source": "/dashboard",  "destination": "/dashboard.html" },
     { "source": "/dashboard/", "destination": "/dashboard.html" },
     { "source": "/workspace",  "destination": "/workspace.html" },
@@ -21,7 +21,7 @@
       ]
     },
     {
-      "source": "/adminlog0.html",
+      "source": "/console.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
       ]
