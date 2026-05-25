@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="https://i.postimg.cc/KzTy05Wm/IMG-20250301-092318-614.jpg" type="image/x-icon">
+<title>LEARNEX</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:      #080c10;
+  --surface: #0d1118;
+  --border:  #1a2233;
+  --accent:  #3b82f6;
+  --accent2: #1d4ed8;
+  --accent3: #60a5fa;
+  --dim:     #334155;
+  --muted:   #64748b;
+  --text:    #cbd5e1;
+  --white:   #f1f5f9;
+  --tg:      #2AABEE;
+  --tg2:     #1a8ecb;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  cursor: none;
+}
+
+#cur {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%,-50%);
+  transition: width .18s, height .18s, opacity .18s;
+  mix-blend-mode: difference;
+}
+#cur.big   { width: 34px; height: 34px; opacity: .35; }
+#cur.tgbig { width: 34px; height: 34px; opacity: .35; background: var(--tg); }
+
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);
+  pointer-events:none; z-index:100;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:44px 44px;
+  opacity:.25;
+  pointer-events:none; z-index:0;
+}
+
+/* Blue radial glow at top */
+body > .glow {
+  position: fixed;
+  top: -120px; left: 50%;
+  transform: translateX(-50%);
+  width: 700px; height: 400px;
+  background: radial-gradient(ellipse at center, rgba(59,130,246,.13) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.wrap {
+  position:relative; z-index:1;
+  max-width:680px; margin:0 auto; padding:0 24px;
+}
+
+header {
+  position:relative; z-index:10;
+  padding:44px 24px 0;
+  max-width:680px; margin:0 auto;
+}
+.hrow { display:flex; align-items:baseline; gap:8px; margin-bottom:5px; }
+.logo { font-family:'Space Mono',monospace; font-size:1.25rem; font-weight:700; color:var(--white); letter-spacing:-.02em; }
+.logo em { 
+  color: transparent;
+  background: linear-gradient(135deg, var(--accent3), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-style:normal; 
+}
+.blink { display:inline-block; width:2px; height:1.1em; background:var(--accent); vertical-align:middle; margin-left:2px; animation:bl 1.1s step-end infinite; }
+@keyframes bl { 0%,100%{opacity:1} 50%{opacity:0} }
+.hsub { font-size:.68rem; color:var(--dim); letter-spacing:.04em; padding-left:1px; }
+.hsub s { color:var(--accent3); text-decoration:none; opacity:.55; }
+
+.sep { height:1px; background:var(--border); margin:28px 0; position:relative; z-index:1; }
+
+.intro { padding-bottom:8px; }
+.prompt { font-size:.66rem; color:var(--dim); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.prompt::before { content:'$'; color:var(--accent); font-size:.82rem; }
+.intro h2 { font-family:'Space Mono',monospace; font-size:clamp(1.45rem,4vw,2.1rem); font-weight:700; color:var(--white); line-height:1.15; letter-spacing:-.03em; margin-bottom:14px; }
+.intro h2 .a { 
+  color: transparent;
+  background: linear-gradient(135deg, var(--accent3) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.intro p { font-size:.75rem; color:var(--muted); line-height:1.9; max-width:460px; }
+
+.cards { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.card {
+  display:flex; align-items:center; gap:16px;
+  padding:18px 16px;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:6px;
+  text-decoration:none; color:inherit;
+  position:relative; overflow:hidden;
+  transition:border-color .2s, background .2s;
+  cursor:none;
+  opacity:0; transform:translateY(10px);
+  animation:rise .4s ease forwards;
+}
+.card:nth-child(1){animation-delay:.1s}
+.card:nth-child(2){animation-delay:.2s}
+.card:nth-child(3){animation-delay:.3s}
+.card:nth-child(4){animation-delay:.4s}
+@keyframes rise { to{opacity:1;transform:translateY(0)} }
+
+.card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:linear-gradient(180deg, var(--accent3), var(--accent2)); opacity:0; transition:opacity .2s; }
+.card::after {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse 80% 60% at 0% 50%, rgba(59,130,246,.05) 0%, transparent 65%);
+  opacity:0; transition:opacity .25s;
+}
+.card:hover { border-color:rgba(59,130,246,.3); background:rgba(59,130,246,.03); }
+.card:hover::before { opacity:1; }
+.card:hover::after { opacity:1; }
+
+.cnum { font-size:.6rem; color:var(--dim); min-width:18px; align-self:flex-start; padding-top:3px; }
+.cimg { width:46px; height:46px; border-radius:7px; object-fit:cover; border:1px solid var(--border); background:var(--surface); flex-shrink:0; filter:grayscale(20%); transition:filter .2s; }
+.card:hover .cimg { filter:grayscale(0%); }
+.cbody { flex:1; }
+.cbody h3 { font-family:'Space Mono',monospace; font-size:.85rem; font-weight:700; color:var(--white); letter-spacing:-.01em; margin-bottom:4px; }
+.cbody .meta { font-size:.62rem; color:var(--dim); letter-spacing:.04em; }
+.cbody .meta .d { color:var(--accent); margin:0 5px; opacity:.4; }
+.curl { font-size:.58rem; color:var(--dim); opacity:0; transition:opacity .2s; white-space:nowrap; }
+.card:hover .curl { opacity:1; color:var(--accent3); }
+
+footer {
+  position:relative; z-index:1;
+  max-width:680px; margin:40px auto 0;
+  padding:22px 24px 44px;
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.fl { font-size:.62rem; color:var(--dim); }
+.fl strong { 
+  color: transparent;
+  background: linear-gradient(135deg, var(--accent3), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.fr { font-size:.58rem; color:var(--dim); opacity:.4; }
+.intro { opacity:0; animation:rise .5s ease forwards .05s; }
+
+/* ═══════════════════════════════════
+   TELEGRAM POPUP
+═══════════════════════════════════ */
+
+#tg-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+#tg-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#tg-modal {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  background: #0d1118;
+  border: 1px solid rgba(42,171,238,.28);
+  border-radius: 8px;
+  overflow: hidden;
+  transform: translateY(28px) scale(.96);
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:
+    0 0 0 1px rgba(42,171,238,.06),
+    0 28px 80px rgba(0,0,0,.85),
+    0 0 60px rgba(42,171,238,.08);
+}
+#tg-overlay.show #tg-modal {
+  transform: translateY(0) scale(1);
+}
+
+#tg-modal::after {
+  content:'';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);
+  pointer-events:none; border-radius:8px; z-index:0;
+}
+
+.tg-bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--tg2), var(--tg), #6ee4ff, var(--tg2));
+  background-size: 300% 100%;
+  animation: barshine 2.5s linear infinite;
+}
+@keyframes barshine {
+  0%   { background-position: 0%   0%; }
+  100% { background-position: 300% 0%; }
+}
+
+#tg-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dim);
+  font-size: .72rem;
+  font-family: 'Space Mono', monospace;
+  transition: background .2s, border-color .2s, color .2s;
+  z-index: 2;
+}
+#tg-close:hover {
+  background: rgba(255,255,255,.1);
+  border-color: var(--muted);
+  color: var(--white);
+}
+
+.tg-inner {
+  padding: 28px 26px 24px;
+  position: relative; z-index: 1;
+}
+
+.tg-head {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 18px;
+}
+
+.tg-icon {
+  width: 50px; height: 50px;
+  background: linear-gradient(135deg, var(--tg), var(--tg2));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 28px rgba(42,171,238,.32);
+  animation: iconpop .5s cubic-bezier(.34,1.56,.64,1) .4s both;
+  position: relative;
+}
+.tg-icon::before {
+  content:'';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(42,171,238,.25);
+  animation: ringpulse 2s ease-in-out infinite;
+}
+@keyframes iconpop { from{transform:scale(0) rotate(-15deg)} to{transform:scale(1) rotate(0)} }
+@keyframes ringpulse {
+  0%,100%{transform:scale(1);opacity:.6}
+  50%    {transform:scale(1.2);opacity:0}
+}
+.tg-icon svg { width: 22px; height: 22px; fill: #fff; }
+
+.tg-eyebrow {
+  font-size: .55rem; color: var(--tg);
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.live-dot {
+  width: 5px; height: 5px;
+  background: var(--tg); border-radius: 50%;
+  animation: ldot 1.4s ease-in-out infinite;
+}
+@keyframes ldot {
+  0%,100%{opacity:1;box-shadow:0 0 5px var(--tg)}
+  50%    {opacity:.2;box-shadow:none}
+}
+.tg-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--white); letter-spacing: -.02em;
+}
+
+.tg-desc {
+  font-size: .69rem; color: var(--muted);
+  line-height: 1.9; margin-bottom: 20px;
+  border-left: 2px solid rgba(42,171,238,.2);
+  padding-left: 12px;
+}
+
+.tg-prog-wrap { margin-bottom: 20px; }
+.tg-prog-row {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 7px;
+}
+.tg-prog-lbl { font-size: .56rem; color: var(--dim); letter-spacing: .04em; }
+#tg-cd { font-size: .56rem; color: var(--tg); font-weight: 700; }
+.tg-prog-track {
+  height: 2px; background: rgba(255,255,255,.06);
+  border-radius: 999px; overflow: hidden;
+}
+#tg-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--tg2), var(--tg));
+  border-radius: 999px;
+  transform-origin: left;
+  animation: shrink var(--d, 8s) linear forwards;
+}
+@keyframes shrink { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+
+.tg-actions {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+
+.btn-join {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--tg), var(--tg2));
+  border: none; border-radius: 5px;
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+  font-size: .74rem; font-weight: 700; letter-spacing: .02em;
+  text-decoration: none;
+  cursor: none;
+  box-shadow: 0 4px 22px rgba(42,171,238,.32);
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+}
+.btn-join:hover {
+  opacity: .88;
+  transform: translateY(-1px);
+  box-shadow: 0 7px 30px rgba(42,171,238,.48);
+}
+.btn-join svg { width: 13px; height: 13px; fill: #fff; flex-shrink: 0; }
+
+.btn-later {
+  padding: 12px 14px;
+  background: transparent;
+  border: 1px solid var(--border); border-radius: 5px;
+  color: var(--dim);
+  font-family: 'Space Mono', monospace; font-size: .68rem;
+  cursor: none;
+  white-space: nowrap;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn-later:hover {
+  border-color: var(--muted);
+  color: var(--white);
+  background: rgba(255,255,255,.03);
+}
+
+.tg-dont {
+  display: flex; align-items: center; gap: 9px;
+  cursor: none; user-select: none;
+}
+.tg-dont input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border: 1px solid var(--border); border-radius: 3px;
+  background: transparent; cursor: none; flex-shrink: 0;
+  position: relative;
+  transition: border-color .2s, background .2s;
+}
+.tg-dont input[type="checkbox"]:checked {
+  background: var(--tg); border-color: var(--tg);
+}
+.tg-dont input[type="checkbox"]:checked::after {
+  content:'';
+  position: absolute; left: 3px; top: 1px;
+  width: 5px; height: 8px;
+  border: 2px solid #fff;
+  border-top: none; border-left: none;
+  transform: rotate(40deg);
+}
+.tg-dont label {
+  font-size: .6rem; color: var(--dim); cursor: none;
+  transition: color .15s;
+}
+.tg-dont:hover label { color: var(--muted); }
+
+@media(max-width:480px){
+  .curl, .cnum { display:none; }
+  footer { flex-direction:column; gap:6px; align-items:flex-start; }
+  .tg-inner { padding: 22px 18px 20px; }
+  .tg-actions { flex-direction: column; }
+  .btn-later { text-align: center; }
+}
+
+/* ═══════════════════════════════════
+   PWA INSTALL BANNER
+═══════════════════════════════════ */
+
+@keyframes pwa-glow-pulse {
+  0%,100% { box-shadow: 0 0 0 1px rgba(59,130,246,.15), 0 28px 80px rgba(0,0,0,.95), 0 0 40px rgba(59,130,246,.1); }
+  50%     { box-shadow: 0 0 0 1px rgba(59,130,246,.3), 0 28px 80px rgba(0,0,0,.95), 0 0 70px rgba(59,130,246,.25); }
+}
+@keyframes pwa-float {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%     { transform: translateX(-50%) translateY(-6px); }
+}
+@keyframes icon-shine {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes pwa-badge-pop {
+  from { transform: scale(0) rotate(-8deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+
+#pwa-banner {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(180px);
+  z-index: 9980;
+  width: calc(100% - 36px);
+  max-width: 400px;
+  background: #0d1118;
+  border: 1px solid rgba(59,130,246,.25);
+  border-radius: 18px;
+  overflow: visible;
+  transition: transform .55s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
+  opacity: 0;
+  pointer-events: none;
+  cursor: none;
+}
+#pwa-banner.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+  animation: pwa-glow-pulse 3.5s ease-in-out infinite, pwa-float 5s ease-in-out infinite 1.2s;
+}
+
+#pwa-banner::before {
+  content:'';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent2) 20%, var(--accent) 50%, var(--accent3) 65%, var(--accent2) 80%, transparent 100%);
+  background-size: 300% 100%;
+  animation: barshine 2s linear infinite;
+  border-radius: 18px 18px 0 0;
+}
+
+#pwa-banner::after {
+  content:'';
+  position: absolute; inset: 0;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(59,130,246,.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+#pwa-close-btn {
+  position: absolute;
+  top: -10px; right: -10px;
+  width: 26px; height: 26px;
+  background: #0d1118;
+  border: 1px solid rgba(59,130,246,.35);
+  border-radius: 50%;
+  cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dim);
+  font-size: .62rem;
+  font-family: 'Space Mono', monospace;
+  line-height: 1;
+  transition: background .2s, border-color .2s, color .2s, transform .2s;
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(0,0,0,.6);
+  animation: pwa-badge-pop .4s cubic-bezier(.34,1.56,.64,1) 3s both;
+}
+#pwa-close-btn:hover {
+  background: rgba(59,130,246,.15);
+  border-color: var(--accent);
+  color: var(--accent3);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.pwa-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 18px 16px;
+  position: relative; z-index: 1;
+}
+
+.pwa-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.pwa-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(59,130,246,.28);
+  background: var(--surface);
+  position: relative;
+  box-shadow: 0 4px 20px rgba(59,130,246,.18);
+}
+.pwa-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pwa-icon::after {
+  content:'';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 25%, rgba(255,255,255,.22) 48%, transparent 72%);
+  background-size: 200% 100%;
+  animation: icon-shine 3.5s ease-in-out infinite 1.8s;
+}
+.pwa-icon-ring {
+  position: absolute; inset: -6px;
+  border-radius: 18px;
+  border: 1px solid rgba(59,130,246,.15);
+  animation: ringpulse 2.8s ease-in-out infinite;
+}
+
+.pwa-text { flex: 1; min-width: 0; }
+.pwa-eyebrow {
+  font-size: .5rem; color: var(--accent3);
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.pwa-eyebrow-dot {
+  width: 5px; height: 5px;
+  background: var(--accent); border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent);
+  animation: ldot 1.4s ease-in-out infinite;
+}
+.pwa-title {
+  font-family: 'Space Mono', monospace;
+  font-size: .9rem; font-weight: 700;
+  color: var(--white); letter-spacing: -.02em;
+  margin-bottom: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pwa-sub {
+  font-size: .54rem; color: var(--dim); letter-spacing: .02em;
+  line-height: 1.5;
+}
+.pwa-badges {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 7px;
+}
+.pwa-badge {
+  font-size: .48rem; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .05em; text-transform: uppercase;
+  color: var(--accent3);
+  background: rgba(59,130,246,.08);
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: 3px;
+  padding: 2px 5px;
+  white-space: nowrap;
+}
+
+.pwa-actions {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0;
+  flex-shrink: 0;
+}
+
+#pwa-install-btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 18px;
+  background: linear-gradient(135deg, var(--accent3) 0%, var(--accent) 100%);
+  border: none; border-radius: 10px;
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+  font-size: .68rem; font-weight: 700; letter-spacing: .05em;
+  cursor: none; white-space: nowrap;
+  position: relative; overflow: hidden;
+  box-shadow:
+    0 4px 22px rgba(59,130,246,.4),
+    0 1px 0 rgba(255,255,255,.15) inset;
+  transition: transform .15s, box-shadow .2s;
+}
+#pwa-install-btn::before {
+  content:'';
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.25) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: icon-shine 2.8s ease-in-out infinite;
+}
+#pwa-install-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 34px rgba(59,130,246,.55), 0 1px 0 rgba(255,255,255,.15) inset;
+}
+#pwa-install-btn:active { transform: translateY(0); }
+#pwa-install-btn svg { width: 13px; height: 13px; fill: #fff; flex-shrink: 0; position: relative; }
+#pwa-install-btn span { position: relative; }
+
+#pwa-dismiss-btn { display: none; }
+
+@media(max-width:400px){
+  .pwa-inner { gap: 11px; padding: 16px 14px 15px; }
+  .pwa-icon  { width: 46px; height: 46px; border-radius: 12px; }
+  #pwa-install-btn { padding: 10px 13px; font-size: .62rem; }
+  .pwa-title { font-size: .82rem; }
+  .pwa-badges { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+<div id="cur"></div>
+
+<!-- ══ PWA INSTALL BANNER ══ -->
+<div id="pwa-banner">
+  <button id="pwa-close-btn" onmouseenter="bc()" onmouseleave="sc()" onclick="document.getElementById('pwa-banner').classList.remove('show'); deferredPrompt = null;" aria-label="Close">✕</button>
+
+  <div class="pwa-inner">
+    <div class="pwa-icon-wrap">
+      <div class="pwa-icon">
+        <img src="https://i.postimg.cc/KzTy05Wm/IMG-20250301-092318-614.jpg" alt="LEARNEX">
+      </div>
+      <div class="pwa-icon-ring"></div>
+    </div>
+
+    <div class="pwa-text">
+      <div class="pwa-eyebrow">
+        <span class="pwa-eyebrow-dot"></span>
+        install_app
+      </div>
+      <div class="pwa-title">LEARNEX</div>
+      <div class="pwa-sub">Fast · Education · Free</div>
+      <div class="pwa-badges">
+        <span class="pwa-badge">PWA</span>
+        <span class="pwa-badge">offline</span>
+      </div>
+    </div>
+
+    <div class="pwa-actions">
+      <button id="pwa-install-btn" onmouseenter="bc()" onmouseleave="sc()">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <span>Install</span>
+      </button>
+    </div>
+  </div>
+
+  <button id="pwa-dismiss-btn" style="display:none"></button>
+</div>
+
+<!-- ══ TELEGRAM POPUP ══ -->
+<div id="tg-overlay">
+  <div id="tg-modal">
+    <div class="tg-bar"></div>
+    <button id="tg-close" onmouseenter="bc()" onmouseleave="sc()" onclick="closePopup()">✕</button>
+
+    <div class="tg-inner">
+      <div class="tg-head">
+        <div class="tg-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </div>
+        <div class="tg-title-block">
+          <div class="tg-eyebrow"><span class="live-dot"></span>website_updates</div>
+          <div class="tg-title">Join our Telegram!</div>
+        </div>
+      </div>
+
+      <div class="tg-desc">
+        Website updates, new platforms, announcements &amp; more — sabse pehle Telegram pe milega.
+        <br><br>
+        Miss mat karo — channel bilkul free hai. 🚀
+      </div>
+
+      <div class="tg-prog-wrap">
+        <div class="tg-prog-row">
+          <span class="tg-prog-lbl">auto_close_in</span>
+          <span id="tg-cd">8s</span>
+        </div>
+        <div class="tg-prog-track">
+          <div id="tg-fill" style="--d:8s"></div>
+        </div>
+      </div>
+
+      <div class="tg-actions">
+        <a href="https://t.me/+mMPycuMpKdA0OTc9"
+           class="btn-join"
+           target="_blank"
+           onmouseenter="tgbc()" onmouseleave="sc()"
+           onclick="onJoin()">
+          <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Join Now ↗
+        </a>
+        <button class="btn-later"
+                onmouseenter="bc()" onmouseleave="sc()"
+                onclick="closePopup()">Maybe Later</button>
+      </div>
+
+      <div class="tg-dont" onmouseenter="bc()" onmouseleave="sc()">
+        <input type="checkbox" id="dontshow">
+        <label for="dontshow">Don't show me again today</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="hrow">
+    <span class="logo">LEARN<em>EX</em></span>
+    <span class="blink"></span>
+  </div>
+  <div class="hsub"><s>~/</s>platforms</div>
+</header>
+
+<div class="wrap">
+  <div class="sep"></div>
+
+  <div class="intro">
+    <div class="prompt">select_platform</div>
+    <h2>Pick your<br><span class="a">institute.</span></h2>
+    <p>Direct access to course platforms.<br>Click a card to open.</p>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="cards">
+
+    <a href="https://learnex.vercel.app/PW" class="card" target="_blank"
+       onmouseenter="bc()" onmouseleave="sc()">
+      <span class="cnum">01</span>
+      <img class="cimg"
+        src="https://static.pw.live/5eb393ee95fab7468a79d189/GLOBAL_CMS/f10eb934-422b-448f-aa2c-157078acb032.webp"
+        alt="PW" onerror="this.style.display='none'">
+      <div class="cbody">
+        <h3>Physics Wallah</h3>
+        <div class="meta">ALL Classes<span class="d">·</span>Education</div>
+      </div>
+      <span class="curl">learnexs.vercel.app/PW ↗</span>
+    </a>
+
+    <a href="https://learnex.vercel.app/VT" class="card" target="_blank"
+       onmouseenter="bc()" onmouseleave="sc()">
+      <span class="cnum">02</span>
+      <img class="cimg"
+        src="https://nocache-appxdb-v2.classx.co.in/subject/2026-02-24-0.8461171343418096.png"
+        alt="VA" onerror="this.style.display='none'">
+      <div class="cbody">
+        <h3>Vibrant Academy</h3>
+        <div class="meta">JEE<span class="d">·</span>Education</div>
+      </div>
+      <span class="curl">learnexs.vercel.app/VT ↗</span>
+    </a>
+
+    <a href="https://learnexs.vercel.app/NT" class="card" target="_blank"
+       onmouseenter="bc()" onmouseleave="sc()">
+      <span class="cnum">03</span>
+      <img class="cimg"
+        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1mUiY27Zw1lOwzgyGbwpdWlVgzDEZGmrfjfZqT0XGew&s"
+        alt="NT" onerror="this.style.display='none'">
+      <div class="cbody">
+        <h3>Next Toppers</h3>
+        <div class="meta">Board Exams<span class="d">·</span>Education</div>
+      </div>
+      <span class="curl">learnexs.vercel.app/NT ↗</span>
+    </a>
+
+    <a href="https://learnex.vercel.app/MissionJeet" class="card" target="_blank"
+       onmouseenter="bc()" onmouseleave="sc()">
+      <span class="cnum">04</span>
+      <img class="cimg"
+        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXhmAX6UC18CYhwU2a6f7gn9E5WE0g4hzSQK2zyH_nVA&s"
+        alt="MJ" onerror="this.style.display='none'">
+      <div class="cbody">
+        <h3>Mission Jeet</h3>
+        <div class="meta">JEE / NEET<span class="d">·</span>Education</div>
+      </div>
+      <span class="curl">learnexs.vercel.app/MissionJeet ↗</span>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <span class="fl"><strong>LEARNEX</strong> // 2026</span>
+  <span class="fr">v1.0.0</span>
+</footer>
+
+<script>
+/* ── Custom cursor ── */
+const cur = document.getElementById('cur');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top  = e.clientY + 'px';
+});
+function bc()   { cur.classList.remove('tgbig'); cur.classList.add('big'); }
+function tgbc() { cur.classList.remove('big');   cur.classList.add('tgbig'); }
+function sc()   { cur.classList.remove('big','tgbig'); }
+
+/* ── Popup logic ── */
+const STORAGE_KEY = 'learnex_tg_hide_date';
+const AUTO_SEC    = 8;
+
+const overlay  = document.getElementById('tg-overlay');
+const cdEl     = document.getElementById('tg-cd');
+const fillEl   = document.getElementById('tg-fill');
+const checkbox = document.getElementById('dontshow');
+
+let autoTimer, cdInterval, timeLeft;
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+function shouldShow() {
+  try { return localStorage.getItem(STORAGE_KEY) !== todayStr(); } catch(e) { return true; }
+}
+function saveHide() {
+  try { localStorage.setItem(STORAGE_KEY, todayStr()); } catch(e) {}
+}
+function openPopup() {
+  overlay.classList.add('show');
+  fillEl.style.animation = 'none';
+  void fillEl.offsetWidth;
+  fillEl.style.setProperty('--d', AUTO_SEC + 's');
+  fillEl.style.animation = '';
+  timeLeft = AUTO_SEC;
+  cdEl.textContent = timeLeft + 's';
+  cdInterval = setInterval(() => {
+    timeLeft--;
+    cdEl.textContent = timeLeft + 's';
+    if (timeLeft <= 0) clearInterval(cdInterval);
+  }, 1000);
+  autoTimer = setTimeout(closePopup, AUTO_SEC * 1000);
+}
+function closePopup() {
+  if (checkbox.checked) saveHide();
+  clearTimeout(autoTimer);
+  clearInterval(cdInterval);
+  overlay.classList.remove('show');
+}
+function onJoin() {
+  saveHide();
+  clearTimeout(autoTimer);
+  clearInterval(cdInterval);
+  setTimeout(closePopup, 400);
+}
+overlay.addEventListener('click', e => {
+  if (e.target === overlay) closePopup();
+});
+window.addEventListener('load', () => {
+  if (shouldShow()) setTimeout(openPopup, 1300);
+});
+
+/* ── PWA Install Banner ── */
+let deferredPrompt = null;
+const pwaBanner     = document.getElementById('pwa-banner');
+const pwaInstallBtn = document.getElementById('pwa-install-btn');
+const pwaDismissBtn = document.getElementById('pwa-dismiss-btn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(() => { pwaBanner.classList.add('show'); }, 2500);
+});
+pwaInstallBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  pwaBanner.classList.remove('show');
+});
+pwaDismissBtn.addEventListener('click', () => {
+  pwaBanner.classList.remove('show');
+  deferredPrompt = null;
+});
+window.addEventListener('appinstalled', () => {
+  pwaBanner.classList.remove('show');
+  deferredPrompt = null;
+});
+
+/* ── PWA Manifest ── */
+const manifest = {
+  name: "LEARNEX",
+  short_name: "LEARNEX",
+  description: "Direct access to all course platforms.",
+  start_url: "/",
+  display: "standalone",
+  background_color: "#080c10",
+  theme_color: "#3b82f6",
+  icons: [
+    { src: "https://i.postimg.cc/KzTy05Wm/IMG-20250301-092318-614.jpg", sizes: "192x192", type: "image/jpeg" },
+    { src: "https://i.postimg.cc/KzTy05Wm/IMG-20250301-092318-614.jpg", sizes: "512x512", type: "image/jpeg" }
+  ]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+const manifestURL  = URL.createObjectURL(manifestBlob);
+const manifestLink = document.createElement('link');
+manifestLink.rel   = 'manifest';
+manifestLink.href  = manifestURL;
+document.head.appendChild(manifestLink);
+
+/* ── Service Worker ── */
+const swCode = `
+const CACHE = 'learnex-v1';
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+self.addEventListener('fetch', e => {
+  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+});
+`;
+if ('serviceWorker' in navigator) {
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swURL  = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL, { scope: '/' }).catch(() => {});
+}
+</script>
+
+</body>
+</html>
