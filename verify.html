@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEARNEX — Secure Gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ════════════════════════════════════════════
+       CUSTOM PRODUCTION STYLING (BESPOKE CYBER DETONATOR GATE)
+       ════════════════════════════════════════════ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0A0E17;
+      --surface: #121824;
+      --charcoal: #1A2333;
+      --accent: #00F2FE;
+      --accent-dim: rgba(0, 242, 254, 0.15);
+      --mint: #00D4AA;
+      --platinum: #FFFFFF;
+      --muted: #6C7A9C;
+      --red: #FF2A54;
+      --font-mono: 'Space Mono', monospace;
+      --font-heading: 'Syne', sans-serif;
+    }
+
+    html, body {
+      background-color: var(--bg);
+      color: var(--platinum);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Cyber Background Matrix Grid Lines */
+    .matrix-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background-image: 
+        linear-gradient(rgba(0, 242, 254, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 254, 0.015) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 50% 50%, black 60%, transparent 100%);
+    }
+
+    .matrix-glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.05), transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Vault Terminal Box Container */
+    .vault-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      padding: 30px;
+      background-color: var(--surface);
+      border: 1px solid rgba(0, 242, 254, 0.15);
+      border-radius: 4px;
+      box-shadow: 0 25px 70px rgba(4, 6, 10, 0.8);
+    }
+
+    /* Technical Tech Corner Borders */
+    .vault-container::before, .vault-container::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-color: var(--accent);
+      border-style: solid;
+      pointer-events: none;
+    }
+    .vault-container::before {
+      top: -1px; left: -1px; border-width: 2px 0 0 2px;
+    }
+    .vault-container::after {
+      bottom: -1px; right: -1px; border-width: 0 2px 2px 0;
+    }
+
+    .vault-header {
+      margin-bottom: 25px;
+      border-bottom: 1px dashed rgba(108, 122, 156, 0.2);
+      padding-bottom: 15px;
+    }
+
+    .vault-header h1 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--platinum);
+      text-transform: uppercase;
+    }
+
+    .vault-header h1 span {
+      color: var(--accent);
+    }
+
+    /* Dynamic Feed Architecture */
+    .terminal-feed {
+      background-color: var(--charcoal);
+      border-left: 2px solid var(--accent);
+      padding: 15px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+      min-height: 140px;
+    }
+
+    .feed-line {
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .feed-line.active {
+      color: var(--accent);
+    }
+
+    .feed-line.success {
+      color: var(--mint);
+    }
+
+    .feed-line.error {
+      color: var(--red);
+    }
+
+    .feed-line::before {
+      content: '>';
+      margin-right: 8px;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .feed-line.success::before {
+      content: '✓';
+      color: var(--mint);
+    }
+
+    .feed-line.error::before {
+      content: '✕';
+      color: var(--red);
+    }
+
+    /* Animated CSS Network Secure Tunnel Tunnel Loading Layout */
+    .tunnel-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--charcoal);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px var(--accent-dim);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-lbl {
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* Action Buttons Trigger on Fail */
+    .btn-abort {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border-radius: 2px;
+    }
+
+    .btn-abort:hover {
+      background-color: rgba(255, 42, 84, 0.1);
+      box-shadow: 0 0 15px rgba(255, 42, 84, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="matrix-bg"></div>
+  <div class="matrix-glow"></div>
+
+  <div class="vault-container">
+    <div class="vault-header">
+      <h1>Learnex // <span>AuthNode</span></h1>
+    </div>
+
+    <div class="terminal-feed" id="terminalFeed">
+      </div>
+
+    <div class="tunnel-box" id="tunnelInterface">
+      <div class="spinner"></div>
+      <div class="status-lbl" id="statusLabel">Initializing Sync...</div>
+    </div>
+
+    <a href="index.html" class="btn-abort" id="abortBtn">Return To Home</a>
+  </div>
+
+  <script>
+    /* ════════════════════════════════════════════
+       CRYPTOGRAPHIC GATEWAY & VAULT PURGE SYSTEM
+       ════════════════════════════════════════════ */
+    document.addEventListener("DOMContentLoaded", () => {
+      const feed = document.getElementById("terminalFeed");
+      const statusLabel = document.getElementById("statusLabel");
+      const tunnel = document.getElementById("tunnelInterface");
+      const abortBtn = document.getElementById("abortBtn");
+
+      function addLog(text, type = "normal") {
+        const line = document.createElement("div");
+        line.className = `feed-line ${type}`;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+        feed.appendChild(line);
+        feed.scrollTop = feed.scrollHeight;
+      }
+
+      setTimeout(async () => {
+        addLog("Establishing connection to secure cluster...", "active");
+        
+        // 1. Token Capture Section
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlToken = urlParams.get('token');
+
+        await new Promise(r => setTimeout(r, 1200));
+
+        if (!urlToken) {
+          addLog("ACCESS CRITICAL CRASH: Security token argument is missing.", "error");
+          statusLabel.textContent = "VERIFICATION FAILED";
+          statusLabel.style.color = "var(--red)";
+          tunnel.querySelector(".spinner").style.borderColor = "var(--red)";
+          abortBtn.style.display = "block";
+          return;
+        }
+
+        addLog(`Token localized: ${urlToken.substring(0, 10)}...`, "normal");
+        await new Promise(r => setTimeout(r, 1000));
+        addLog("Querying Session Vault records...", "active");
+
+        // 2. Immediate Vault Purge & Multi-Use Protection Logic
+        // Hum Token ko database simulation ya localStorage ke array/key se direct target karte hain
+        const vaultKey = "lnx_active_tokens";
+        let activeTokens = JSON.parse(localStorage.getItem(vaultKey)) || [];
+
+        // Check if token exists inside the local database
+        const isTokenValid = activeTokens.includes(urlToken);
+
+        await new Promise(r => setTimeout(r, 1400));
+
+        if (!isTokenValid) {
+          addLog("ACCESS CRITICAL CRASH: Token is stale, invalid or already detonated.", "error");
+          statusLabel.textContent = "ACCESS DENIED";
+          statusLabel.style.color = "var(--red)";
+          tunnel.querySelector(".spinner").style.borderColor = "var(--red)";
+          abortBtn.style.display = "block";
+          return;
+        }
+
+        // CRITICAL DESTRUCTION MATRIX - EXACT millisecond destruction to guarantee single-use mechanics
+        activeTokens = activeTokens.filter(t => t !== urlToken);
+        localStorage.setItem(vaultKey, JSON.stringify(activeTokens));
+        addLog("SUCCESS: Secure token instantly consumed and burned from Local Storage.", "success");
+
+        await new Promise(r => setTimeout(r, 1000));
+        addLog("Initializing temporary local authorization matrix...", "active");
+
+        // 3. Session Initialization Section
+        localStorage.setItem("lnx_session_pass", "active");
+        addLog("Session initialization verified: Flag set to active.", "success");
+
+        // 4. Advanced Network Sequence Simulations Display
+        await new Promise(r => setTimeout(r, 900));
+        statusLabel.textContent = "Building Cryptographic Tunnel...";
+        addLog("Mounting isolated tunnel proxy routing layer...", "normal");
+
+        await new Promise(r => setTimeout(r, 1100));
+        addLog("Synchronizing data nodes across server layers...", "normal");
+        
+        await new Promise(r => setTimeout(r, 800));
+        addLog("All Handshakes resolved cleanly. Booting platform...", "success");
+        statusLabel.textContent = "Redirecting Client...";
+
+        await new Promise(r => setTimeout(r, 1000));
+        
+        // Boot user cleanly into dashboard.html without leaving stale trails
+        window.location.replace("dashboard.html");
+
+      }, 600);
+    });
+  </script>
+</body>
+</html>
