@@ -1,32 +1,15 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/adminpanel", "destination": "/console.html" },
-    { "source": "/adminpanel/", "destination": "/console.html" },
-    { "source": "/dashboard",  "destination": "/dashboard.html" },
-    { "source": "/dashboard/", "destination": "/dashboard.html" },
-    { "source": "/workspace",  "destination": "/workspace.html" },
-    { "source": "/workspace/", "destination": "/workspace.html" },
-    { "source": "/verify",     "destination": "/verify.html"    },
-    { "source": "/verify/",    "destination": "/verify.html"    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options",    "value": "nosniff"        },
-        { "key": "X-Frame-Options",           "value": "SAMEORIGIN"     },
-        { "key": "Referrer-Policy",           "value": "no-referrer"    },
-        { "key": "X-XSS-Protection",          "value": "1; mode=block"  }
-      ]
-    },
-    {
-      "source": "/console.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
-      ]
-    }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+    { "source": "/NT", "destination": "/dashboard_nt.html" },
+    { "source": "/missonjeet", "destination": "/dashboard_missonjeet.html" },
+    { "source": "/physicswallah", "destination": "/dashboard_pw.html" },
+    { "source": "/batch_nt", "destination": "/batch_nt.html" },
+    { "source": "/batch_mj", "destination": "/batch_missionjeet.html" },
+    { "source": "/player_nt", "destination": "/player_nt.html" },
+    { "source": "/player_mj", "destination": "/player_missonjeet.html" },
+    { "source": "/player_pw", "destination": "/player_pw.html" },
+    { "source": "/verify", "destination": "/verify.html" },
+    { "source": "/adminpanel", "destination": "/console.html" }
+  ]
 }
