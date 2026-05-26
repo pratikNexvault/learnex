@@ -1,18 +1,34 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+
   "rewrites": [
-    { "source": "/vt",          "destination": "/vt.html" },
-    { "source": "/NT",          "destination": "/NT.html" },
-    { "source": "/MissionJeet", "destination": "/MissionJeet.html" }
+    { "source": "/",             "destination": "/index.html" },
+    { "source": "/PW",           "destination": "/PW.html" },
+    { "source": "/access",       "destination": "/access.html" },
+    { "source": "/generate",     "destination": "/generate.html" },
+
+    { "source": "/vt",           "destination": "/vt.html" },
+    { "source": "/NT",           "destination": "/NT.html" },
+    { "source": "/MissionJeet",  "destination": "/MissionJeet.html" }
   ],
+
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options",        "value": "SAMEORIGIN"  },
-        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]
