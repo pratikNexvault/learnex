@@ -1,5 +1,7 @@
 {
+  "version": 2,
   "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/PW", "destination": "/PW.html" },
     { "source": "/RC", "destination": "/rc.html" },
