@@ -3,14 +3,45 @@
   "trailingSlash": false,
 
   "rewrites": [
-    { "source": "/",             "destination": "/index.html" },
-    { "source": "/PW",           "destination": "/PW.html" },
-    { "source": "/access",       "destination": "/access.html" },
-    { "source": "/generate",     "destination": "/generate.html" },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
 
-    { "source": "/vt",           "destination": "/vt.html" },
-    { "source": "/NT",           "destination": "/NT.html" },
-    { "source": "/MissionJeet",  "destination": "/MissionJeet.html" }
+    {
+      "source": "/PW",
+      "destination": "/PW.html"
+    },
+
+    {
+      "source": "/NT",
+      "destination": "/NT.html"
+    },
+
+    {
+      "source": "/MissionJeet",
+      "destination": "/MissionJeet.html"
+    },
+
+    {
+      "source": "/vt",
+      "destination": "/vt.html"
+    },
+
+    {
+      "source": "/generate-main",
+      "destination": "/generate-main.html"
+    },
+
+    {
+      "source": "/generate-vibrant",
+      "destination": "/generate-vibrant.html"
+    },
+
+    {
+      "source": "/access",
+      "destination": "/access.html"
+    }
   ],
 
   "headers": [
