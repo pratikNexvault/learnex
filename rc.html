@@ -6,17 +6,30 @@
     <title>Batch Dashboard</title>
 
     <!-- ── Authentication Guard (runs synchronously before anything renders) ── -->
-    <script>
-(function () {
-    var access = localStorage.getItem('main_access');
-    var expiry = localStorage.getItem('main_expiry');
-    if (!access || !expiry || Date.now() > parseInt(expiry, 10)) {
-        localStorage.removeItem('main_access');
-        localStorage.removeItem('main_expiry');
-        window.location.replace('/generate');
-    }
-})();
-</script>
+        <script>
+    (function () {
+        var access = localStorage.getItem('main_access');
+        var expiry = localStorage.getItem('main_expiry');
+        
+        // Check 1: Agar token missing hai ya "granted" nahi hai
+        if (!access || access !== "granted" || !expiry) {
+            localStorage.removeItem('main_access');
+            localStorage.removeItem('main_expiry');
+            window.location.replace('/generate');
+            return;
+        }
+
+        // Check 2: Expiry timestamp validation
+        var now = Date.now();
+        if (now > Number(expiry)) {
+            localStorage.removeItem('main_access');
+            localStorage.removeItem('main_expiry');
+            window.location.replace('/generate');
+            return;
+        }
+    })();
+    </script>
+
 
 
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
