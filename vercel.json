@@ -1,8 +1,19 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/PW", "destination": "/PW" },
-    { "source": "/vt", "destination": "/vt/index.html" },
-    { "source": "/NT", "destination": "/NT/index.html" },
-    { "source": "/MissionJeet", "destination": "/MissionJeet/index.html" }
+    { "source": "/vt",          "destination": "/vt.html" },
+    { "source": "/NT",          "destination": "/NT.html" },
+    { "source": "/MissionJeet", "destination": "/MissionJeet.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options",        "value": "SAMEORIGIN"  },
+        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
+      ]
+    }
   ]
 }
