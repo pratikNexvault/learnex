@@ -5,6 +5,8 @@
   "rewrites": [
     { "source": "/PW", "destination": "/PW.html" },
     { "source": "/RC", "destination": "/Rc.html" },
+    { "source": "/topics", "destination": "/topics.html" },
+    { "source": "/player", "destination": "/player.html" }
     { "source": "/access", "destination": "/access.html" },
     { "source": "/generate", "destination": "/generate.html" }
   ]
