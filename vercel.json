@@ -6,7 +6,7 @@
     { "source": "/PW", "destination": "/PW.html" },
     { "source": "/RC", "destination": "/rc.html" },
     { "source": "/topics", "destination": "/topics.html" },
-    { "source": "/player", "destination": "/player.html" }
+    { "source": "/player", "destination": "/player.html" },
     { "source": "/access", "destination": "/access.html" },
     { "source": "/generate", "destination": "/generate.html" }
   ]
