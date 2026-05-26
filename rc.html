@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Udaan 2027 (Class 10th)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #06080f;
+            --surface:  #0c1018;
+            --card:     #0f1520;
+            --card-h:   #141d2e;
+            --b0:       rgba(255,255,255,.055);
+            --b1:       rgba(255,255,255,.10);
+            --a1:       #5b5ef4;
+            --a2:       #9b59f5;
+            --a3:       #0ea5e9;
+            --green:    #10b981;
+            --cyan:     #22d3ee;
+            --amber:    #f59e0b;
+            --red:      #ef4444;
+            --t0:       #f1f5ff;
+            --t1:       #8895ae;
+            --t2:       #3d4a5c;
+            --r:        14px;
+            --r2:       20px;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body {
+            font-family: 'Geist', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--t0);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Ambient mesh bg ─────────────────────────────────────────────── */
+        .gfx {
+            position: fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+        }
+        .gfx-blob {
+            position: absolute; border-radius:50%; filter:blur(100px);
+        }
+        .gfx-blob.b1 {
+            width:700px; height:450px; top:-160px; left:-120px;
+            background: radial-gradient(ellipse, rgba(91,94,244,.13) 0%, transparent 70%);
+            animation: drift1 20s ease-in-out infinite alternate;
+        }
+        .gfx-blob.b2 {
+            width:600px; height:400px; bottom:-100px; right:-120px;
+            background: radial-gradient(ellipse, rgba(155,89,245,.09) 0%, transparent 70%);
+            animation: drift2 25s ease-in-out infinite alternate;
+        }
+        .gfx-blob.b3 {
+            width:400px; height:300px; top:40%; left:40%;
+            background: radial-gradient(ellipse, rgba(14,165,233,.06) 0%, transparent 70%);
+            animation: drift1 30s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes drift1 {
+            0%   { transform: translate(0,0) scale(1); }
+            50%  { transform: translate(50px,35px) scale(1.08); }
+            100% { transform: translate(-25px,70px) scale(0.96); }
+        }
+        @keyframes drift2 {
+            0%   { transform: translate(0,0) scale(1); }
+            50%  { transform: translate(-40px,-30px) scale(1.06); }
+            100% { transform: translate(30px,-60px) scale(0.94); }
+        }
+        .gfx-dots {
+            position:absolute; inset:0;
+            background-image: radial-gradient(circle, rgba(255,255,255,.022) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 82%, transparent 100%);
+        }
+
+        /* ─── Page load overlay ───────────────────────────────────────────── */
+        #page-loader {
+            position:fixed; inset:0; z-index:9000;
+            background: var(--bg);
+            display:flex; align-items:center; justify-content:center;
+            flex-direction:column; gap:18px;
+            transition: opacity .35s ease, visibility .35s ease;
+        }
+        #page-loader.hidden { opacity:0; visibility:hidden; }
+        .loader-logo {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size:22px; font-weight:800; color:var(--t0);
+            letter-spacing:-.02em;
+        }
+        .loader-logo span { color:var(--a1); }
+        .loader-ring {
+            width:44px; height:44px; border-radius:50%;
+            border:2.5px solid var(--b1);
+            border-top-color: var(--a1);
+            border-right-color: var(--a2);
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .loader-dots {
+            display:flex; gap:7px;
+        }
+        .loader-dots span {
+            width:6px; height:6px; border-radius:50%;
+            background:var(--a1); opacity:.3;
+            animation: ldot .9s ease infinite;
+        }
+        .loader-dots span:nth-child(2){ animation-delay:.15s; background:var(--a2); }
+        .loader-dots span:nth-child(3){ animation-delay:.30s; background:var(--cyan); }
+        @keyframes ldot {
+            0%,80%,100%{ opacity:.2; transform:scale(.8); }
+            40%        { opacity:1;  transform:scale(1.15); }
+        }
+
+        /* ─── Progress bar ────────────────────────────────────────────────── */
+        #bar {
+            position:fixed; top:0; left:0; height:2px; width:0%;
+            background: linear-gradient(90deg, var(--a1), var(--a2), var(--cyan));
+            z-index:9999;
+            box-shadow: 0 0 10px var(--a1), 0 0 22px rgba(91,94,244,.5);
+            transition: width .3s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+            border-radius: 0 2px 2px 0;
+        }
+        #bar.fin { width:100% !important; opacity:0; }
+
+        /* ─── Navbar ──────────────────────────────────────────────────────── */
+        .nav {
+            position:sticky; top:0; z-index:400;
+            height:58px;
+            background: rgba(6,8,15,.82);
+            backdrop-filter: blur(32px) saturate(1.6);
+            -webkit-backdrop-filter: blur(32px) saturate(1.6);
+            border-bottom: 1px solid var(--b0);
+            display:flex; align-items:center;
+            padding: 0 16px; gap:12px;
+        }
+        .back-btn {
+            display:inline-flex; align-items:center; gap:.45rem;
+            padding:.45rem 1rem; border-radius:100px;
+            background:var(--card); border:1px solid var(--b0);
+            color:var(--t1); font-size:.82rem; font-weight:600;
+            cursor:pointer; transition:all .2s ease;
+            font-family:inherit; text-decoration:none;
+        }
+        .back-btn:hover {
+            background:rgba(91,94,244,.12);
+            border-color:rgba(91,94,244,.3);
+            color:#a5b4fc; transform:translateX(-2px);
+        }
+        .back-btn svg { flex-shrink:0; }
+        .nav-logo {
+            font-family:'Bricolage Grotesque',sans-serif;
+            font-size:1.05rem; font-weight:800; color:var(--t0);
+            letter-spacing:-.02em;
+        }
+        .nav-logo span { color:var(--a1); }
+
+        /* ─── Hero ────────────────────────────────────────────────────────── */
+        .hero {
+            position:relative; z-index:1;
+            padding: 40px 20px 28px;
+            border-bottom: 1px solid var(--b0);
+            animation: up .45s ease both;
+        }
+        .hero-inner { max-width:1280px; margin:0 auto; }
+        .hero-eyebrow {
+            display:inline-flex; align-items:center; gap:.4rem;
+            font-size:.72rem; font-weight:700; letter-spacing:.12em;
+            text-transform:uppercase; color:var(--a1);
+            background:rgba(91,94,244,.1); border:1px solid rgba(91,94,244,.22);
+            padding:.3rem .85rem; border-radius:100px; margin-bottom:1rem;
+        }
+        .hero-title {
+            font-family:'Bricolage Grotesque',sans-serif;
+            font-size: clamp(26px,5.5vw,44px);
+            font-weight:800; line-height:1.1; letter-spacing:-.03em;
+            color:var(--t0); margin-bottom:1rem; max-width:860px;
+        }
+        .hero-title .hl {
+            background: linear-gradient(135deg, #818cf8 0%, var(--cyan) 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .hero-chips { display:flex; flex-wrap:wrap; gap:.5rem; }
+        .chip {
+            font-size:.76rem; font-weight:600;
+            padding:.32rem .82rem; border-radius:100px;
+            background:rgba(255,255,255,.04); border:1px solid var(--b0);
+            color:var(--t1);
+        }
+
+        /* ─── Tabs ────────────────────────────────────────────────────────── */
+        .tabs-wrap {
+            position:sticky; top:58px; z-index:300;
+            background:rgba(6,8,15,.85); backdrop-filter:blur(24px);
+            border-bottom:1px solid var(--b0);
+            padding:0 16px;
+        }
+        .tabs-inner {
+            max-width:1280px; margin:0 auto;
+            display:flex; gap:0; overflow-x:auto;
+            scrollbar-width:none;
+        }
+        .tabs-inner::-webkit-scrollbar { display:none; }
+        .tab-btn {
+            position:relative; display:flex; align-items:center; gap:.4rem;
+            padding:.9rem 1.1rem; border:none; background:transparent;
+            color:var(--t2); font-family:inherit; font-size:.85rem;
+            font-weight:600; cursor:pointer; white-space:nowrap;
+            transition:color .2s; border-bottom:2px solid transparent;
+        }
+        .tab-btn:hover { color:var(--t1); }
+        .tab-btn.active { color:var(--t0); border-bottom-color:var(--a1); }
+        .tab-icon { font-size:.95rem; }
+        .tab-count {
+            font-size:.67rem; font-weight:700;
+            background:rgba(91,94,244,.2); color:#818cf8;
+            padding:.1rem .42rem; border-radius:6px;
+        }
+        .tab-live-dot {
+            width:6px; height:6px; border-radius:50%;
+            background:var(--red); animation:blink 1.2s ease infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+        /* ─── Content area ────────────────────────────────────────────────── */
+        .content-wrap {
+            position:relative; z-index:1;
+            max-width:1280px; margin:0 auto;
+            padding:28px 20px 80px;
+        }
+        .section { display:none; animation:fadeUp .35s ease forwards; }
+        .section.active { display:block; }
+        @keyframes fadeUp {
+            from{ opacity:0; transform:translateY(14px); }
+            to  { opacity:1; transform:translateY(0); }
+        }
+
+        /* ─── Section header ──────────────────────────────────────────────── */
+        .sec-head {
+            display:flex; align-items:baseline; gap:.75rem;
+            margin-bottom:1.4rem;
+        }
+        .sec-head h2 {
+            font-family:'Bricolage Grotesque',sans-serif;
+            font-size:1.4rem; font-weight:700; color:var(--t0); letter-spacing:-.02em;
+        }
+        .sec-head .count { font-size:.78rem; font-weight:600; color:var(--t2); }
+
+        /* ─── Description card ────────────────────────────────────────────── */
+        .desc-card {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); padding:1.75rem 2rem; margin-bottom:1.25rem;
+            transition:border-color .2s;
+        }
+        .desc-card:hover { border-color:rgba(91,94,244,.25); }
+        .desc-card * { font-family:'Geist',sans-serif !important; color:var(--t1) !important; }
+        .desc-card .main-text { color:var(--cyan) !important; font-weight:700 !important; }
+
+        /* ─── Teachers row ────────────────────────────────────────────────── */
+        .teachers-row {
+            display:flex; gap:1rem; overflow-x:auto;
+            scrollbar-width:none; padding:.25rem .1rem 1rem;
+        }
+        .teachers-row::-webkit-scrollbar { display:none; }
+        .tc {
+            flex:0 0 150px; background:var(--card);
+            border:1px solid var(--b0); border-radius:var(--r2);
+            overflow:hidden; transition:all .25s ease;
+        }
+        .tc:hover {
+            border-color:rgba(91,94,244,.35);
+            transform:translateY(-4px);
+            box-shadow:0 12px 36px rgba(0,0,0,.4);
+        }
+        .tc-arch {
+            height:140px; background:linear-gradient(160deg,#1a1640 0%,#0e1235 100%);
+            position:relative; overflow:hidden;
+            display:flex; align-items:flex-end; justify-content:center;
+        }
+        .tc-arch::before {
+            content:''; position:absolute; bottom:0; left:50%;
+            transform:translateX(-50%); width:190px; height:95px;
+            border-radius:50% 50% 0 0; border:2px solid rgba(91,94,244,.25);
+        }
+        .tc-arch::after {
+            content:''; position:absolute; bottom:0; left:50%;
+            transform:translateX(-50%); width:130px; height:65px;
+            border-radius:50% 50% 0 0; border:2px solid rgba(91,94,244,.45);
+        }
+        .tc-img {
+            position:relative; z-index:2; width:90px; height:115px;
+            object-fit:cover; object-position:top; display:block; margin:0 auto;
+            filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));
+        }
+        .tc-body { padding:.75rem; text-align:center; }
+        .tc-name { font-size:.82rem; font-weight:700; color:var(--t0); margin-bottom:.2rem; line-height:1.3; }
+        .tc-sub  { font-size:.7rem; color:var(--t2); font-weight:500; }
+        .tc-exp  {
+            display:inline-block; margin-top:.4rem;
+            font-size:.65rem; font-weight:700; color:var(--amber);
+            background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.2);
+            padding:.15rem .55rem; border-radius:100px;
+        }
+
+        /* ─── Subjects bento ──────────────────────────────────────────────── */
+        .bento {
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap:1rem;
+        }
+        .subj-card {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); padding:1.25rem;
+            display:flex; align-items:center; gap:1rem;
+            text-decoration:none; color:inherit; cursor:pointer;
+            transition:all .25s ease; position:relative; overflow:hidden;
+        }
+        .subj-card::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(135deg,rgba(91,94,244,0) 0%,rgba(91,94,244,.07) 100%);
+            opacity:0; transition:opacity .25s;
+        }
+        .subj-card:hover::before { opacity:1; }
+        .subj-card:hover {
+            border-color:rgba(91,94,244,.35);
+            transform:translateY(-3px);
+            box-shadow:0 14px 40px rgba(0,0,0,.35);
+        }
+        /* Left glow strip */
+        .subj-card::after {
+            content:''; position:absolute; left:0; top:18px; bottom:18px; width:3px;
+            background:linear-gradient(to bottom,var(--a1),var(--a2));
+            border-radius:0 3px 3px 0;
+            opacity:0; transform:scaleY(.3);
+            transition:opacity .22s, transform .22s;
+        }
+        .subj-card:hover::after { opacity:1; transform:scaleY(1); }
+        .subj-img-wrap {
+            width:52px; height:52px; border-radius:13px;
+            background:rgba(91,94,244,.12); flex-shrink:0;
+            overflow:hidden; position:relative; z-index:1;
+        }
+        .subj-img { width:100%; height:100%; object-fit:cover; }
+        .subj-info { flex:1; min-width:0; position:relative; z-index:1; }
+        .subj-name {
+            font-family:'Bricolage Grotesque',sans-serif;
+            font-size:.92rem; font-weight:700; color:var(--t0);
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:.3rem;
+        }
+        .subj-meta { display:flex; align-items:center; gap:.4rem; }
+        .badge {
+            font-size:.68rem; font-weight:700;
+            padding:.2rem .6rem; border-radius:100px;
+        }
+        .badge-count { background:rgba(34,211,238,.1); color:var(--cyan); border:1px solid rgba(34,211,238,.2); }
+        .badge-soon  { background:rgba(61,74,92,.15); color:var(--t2); border:1px solid rgba(61,74,92,.2); }
+        .subj-teacher-row {
+            display:flex; align-items:center; gap:.4rem; margin-top:.45rem;
+        }
+        .subj-tpic {
+            width:20px; height:20px; border-radius:50%;
+            object-fit:cover; flex-shrink:0; border:1.5px solid rgba(91,94,244,.3);
+        }
+        .subj-tname {
+            font-size:.7rem; color:var(--t2); font-weight:500;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .subj-arrow {
+            flex-shrink:0; width:28px; height:28px; border-radius:50%;
+            background:rgba(91,94,244,.12); display:flex; align-items:center;
+            justify-content:center; font-size:.8rem; color:#818cf8;
+            transition:all .2s; position:relative; z-index:1;
+        }
+        .subj-card:hover .subj-arrow { background:var(--a1); color:#fff; transform:translateX(2px); }
+
+        /* ─── Live grid ───────────────────────────────────────────────────── */
+        .live-grid {
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap:1.1rem;
+        }
+        .lc {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); overflow:hidden;
+            transition:all .25s ease; text-decoration:none;
+            color:inherit; display:block;
+        }
+        .lc:hover {
+            border-color:rgba(91,94,244,.35);
+            transform:translateY(-4px);
+            box-shadow:0 18px 48px rgba(0,0,0,.4);
+        }
+        .lc-disabled { opacity:.62; cursor:not-allowed; }
+        .lc-thumb { position:relative; aspect-ratio:16/9; overflow:hidden; background:var(--surface); }
+        .lc-thumb img {
+            width:100%; height:100%; object-fit:cover; display:block;
+            transition:transform .4s ease;
+        }
+        .lc:hover .lc-thumb img { transform:scale(1.04); }
+        .lc-thumb-overlay {
+            position:absolute; inset:0;
+            background:linear-gradient(to top,rgba(6,8,15,.8) 0%,transparent 60%);
+        }
+        .lc-play {
+            position:absolute; inset:0; display:flex;
+            align-items:center; justify-content:center;
+            opacity:0; transition:opacity .3s;
+        }
+        .lc:hover .lc-play { opacity:1; }
+        .lc-play-icon {
+            width:52px; height:52px;
+            background:rgba(255,255,255,.14); backdrop-filter:blur(8px);
+            border:2px solid rgba(255,255,255,.28); border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+        }
+        .lc-badge {
+            position:absolute; top:.65rem; left:.65rem;
+            font-size:.62rem; font-weight:800; letter-spacing:.08em;
+            text-transform:uppercase; padding:.25rem .72rem; border-radius:100px;
+        }
+        .badge-live-s {
+            background:rgba(239,68,68,.2); color:#fca5a5;
+            border:1px solid rgba(239,68,68,.4);
+            animation:glow-red 1.5s ease infinite;
+        }
+        @keyframes glow-red {
+            0%,100%{ box-shadow:0 0 8px rgba(239,68,68,.25); }
+            50%    { box-shadow:0 0 18px rgba(239,68,68,.6); }
+        }
+        .badge-ended-s   { background:rgba(100,116,139,.15); color:#94a3b8; border:1px solid rgba(100,116,139,.22); }
+        .badge-pending-s { background:rgba(245,158,11,.15); color:#fcd34d; border:1px solid rgba(245,158,11,.28); }
+        .lc-body { padding:1.1rem; }
+        .lc-subject {
+            font-size:.68rem; font-weight:700; letter-spacing:.08em;
+            text-transform:uppercase; color:var(--cyan); margin-bottom:.35rem;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .lc-topic {
+            font-family:'Bricolage Grotesque',sans-serif;
+            font-size:.95rem; font-weight:700; color:var(--t0);
+            line-height:1.4; margin-bottom:.65rem;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+        }
+        .lc-meta {
+            display:flex; flex-wrap:wrap; gap:.35rem .65rem;
+            font-size:.74rem; color:var(--t2); font-weight:500; margin-bottom:.75rem;
+        }
+        .lc-tags { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.85rem; }
+        .lc-tag {
+            font-size:.65rem; font-weight:700;
+            padding:.18rem .55rem; border-radius:7px;
+            background:rgba(91,94,244,.12); color:#818cf8;
+            border:1px solid rgba(91,94,244,.2);
+        }
+        .lc-btn {
+            width:100%; padding:.6rem; border-radius:11px;
+            font-size:.8rem; font-weight:700; text-align:center; letter-spacing:.01em;
+        }
+        .lc-btn-on {
+            background:linear-gradient(135deg,var(--a1) 0%,#7c3aed 100%);
+            color:#fff; box-shadow:0 4px 18px rgba(91,94,244,.3);
+        }
+        .lc-btn-off {
+            background:rgba(61,74,92,.1); color:var(--t2);
+            border:1px solid rgba(61,74,92,.18);
+        }
+
+        /* ─── Announcements ───────────────────────────────────────────────── */
+        .ann-list { display:flex; flex-direction:column; gap:1rem; }
+        .ann-card {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); overflow:hidden; transition:all .25s;
+        }
+        .ann-card:hover { border-color:rgba(91,94,244,.28); box-shadow:0 8px 28px rgba(0,0,0,.3); }
+        .ann-img { width:100%; height:auto; display:block; }
+        .ann-body { padding:1.35rem 1.5rem; }
+        .ann-top { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; margin-bottom:.6rem; }
+        .ann-badge {
+            font-size:.63rem; font-weight:800; letter-spacing:.06em;
+            text-transform:uppercase; padding:.22rem .65rem; border-radius:100px;
+        }
+        .ann-general { background:rgba(91,94,244,.15);  color:#818cf8; border:1px solid rgba(91,94,244,.25); }
+        .ann-dpp     { background:rgba(245,158,11,.15); color:var(--amber); border:1px solid rgba(245,158,11,.28); }
+        .ann-lecture { background:rgba(34,211,238,.12); color:var(--cyan); border:1px solid rgba(34,211,238,.22); }
+        .ann-offer   { background:rgba(16,185,129,.12); color:var(--green); border:1px solid rgba(16,185,129,.22); }
+        .ann-heading { font-family:'Bricolage Grotesque',sans-serif; font-size:1rem; font-weight:700; color:var(--t0); }
+        .ann-text  { font-size:.86rem; color:var(--t1); line-height:1.65; margin-bottom:.65rem; }
+        .ann-date  { font-size:.73rem; color:var(--t2); font-weight:600; }
+
+        /* ─── Empty / error ───────────────────────────────────────────────── */
+        .empty {
+            text-align:center; padding:4rem 2rem;
+            border:1px dashed var(--b0); border-radius:var(--r2);
+            animation:up .4s ease both;
+        }
+        .empty-icon { font-size:2.5rem; margin-bottom:.75rem; opacity:.4; }
+        .empty p { color:var(--t2); font-size:.9rem; }
+
+        /* ─── Coming Soon popup ───────────────────────────────────────────── */
+        #cs-overlay {
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,.65); backdrop-filter:blur(10px);
+            z-index:9999; align-items:center; justify-content:center; padding:1.5rem;
+        }
+        #cs-overlay.show { display:flex; }
+        #cs-popup {
+            background:linear-gradient(145deg,#111827,#0c1018);
+            border:1px solid rgba(91,94,244,.3); border-radius:28px;
+            padding:2.25rem 2rem 2rem; max-width:310px; width:100%;
+            text-align:center;
+            box-shadow:0 32px 80px rgba(0,0,0,.75),0 0 0 1px rgba(91,94,244,.1);
+            animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
+        .cs-icon  { font-size:2.75rem; display:block; margin-bottom:.75rem; }
+        .cs-title { font-family:'Bricolage Grotesque',sans-serif; font-size:1.15rem; font-weight:800; color:var(--t0); margin-bottom:.4rem; }
+        .cs-sub   { font-size:.76rem; color:var(--cyan); font-weight:700; background:rgba(34,211,238,.08); border-radius:100px; padding:.22rem .85rem; display:inline-block; margin-bottom:.8rem; }
+        .cs-msg   { font-size:.83rem; color:var(--t1); line-height:1.6; margin-bottom:1.3rem; }
+        .cs-btn   { background:linear-gradient(135deg,var(--a1),#7c3aed); color:#fff; border:none; padding:.7rem 0; border-radius:13px; font-size:.88rem; font-weight:700; cursor:pointer; width:100%; font-family:inherit; box-shadow:0 4px 18px rgba(91,94,244,.3); transition:opacity .2s; }
+        .cs-btn:hover { opacity:.84; }
+
+        /* ─── Divider ─────────────────────────────────────────────────────── */
+        .divider { height:1px; background:var(--b0); margin:2.5rem 0; }
+
+        /* ─── Shimmer skeleton ────────────────────────────────────────────── */
+        @keyframes shim {
+            0%   { background-position:200% 0; }
+            100% { background-position:-200% 0; }
+        }
+        .skel {
+            background:linear-gradient(90deg,
+                rgba(255,255,255,.035) 25%,
+                rgba(255,255,255,.075) 50%,
+                rgba(255,255,255,.035) 75%);
+            background-size:200% 100%;
+            border-radius:8px;
+            animation:shim 1.7s infinite ease-in-out;
+        }
+        .skel-card {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); padding:1.25rem;
+            display:flex; align-items:center; gap:1rem;
+            opacity:0; animation:rowIn .38s cubic-bezier(.4,0,.2,1) both;
+        }
+        .skel-icon { width:52px; height:52px; border-radius:13px; flex-shrink:0; }
+        .skel-body { flex:1; display:flex; flex-direction:column; gap:9px; }
+        .skel-line { height:13px; }
+        .skel-pill { height:20px; width:70px; border-radius:100px; }
+        @keyframes rowIn {
+            from { opacity:0; transform:translateY(10px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* ─── Reveal animation ────────────────────────────────────────────── */
+        .reveal { opacity:0; transform:translateY(16px); transition:opacity .5s ease,transform .5s ease; }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+
+        /* ─── Keyframes ───────────────────────────────────────────────────── */
+        @keyframes up {
+            from { opacity:0; transform:translateY(12px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* ─── Responsive ──────────────────────────────────────────────────── */
+        @media (max-width:640px) {
+            .bento, .live-grid { grid-template-columns:1fr; }
+            .hero { padding:26px 16px 20px; }
+            .content-wrap { padding:20px 14px 60px; }
+            .hero-title { font-size:clamp(22px,6vw,32px); }
+            .nav-logo { font-size:.95rem; }
+        }
+        /* ─── Community ──────────────────────────────────────────────── */
+        .comm-channels {
+            display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.75rem;
+            padding-bottom:1.25rem;
+            border-bottom:1px solid var(--b0);
+        }
+        .comm-ch-btn {
+            display:inline-flex; align-items:center; gap:.4rem;
+            padding:.45rem 1.1rem; border-radius:100px;
+            border:1px solid var(--b0); background:var(--card);
+            color:var(--t1); font-family:inherit; font-size:.82rem;
+            font-weight:600; cursor:pointer; transition:all .2s ease;
+        }
+        .comm-ch-btn.active {
+            background:linear-gradient(135deg,rgba(91,94,244,.2),rgba(155,89,245,.15));
+            border-color:rgba(91,94,244,.45);
+            color:#c4b5fd;
+            box-shadow:0 0 0 1px rgba(91,94,244,.15);
+        }
+        .comm-ch-btn:hover:not(.active) {
+            border-color:var(--b1); color:var(--t0); background:var(--card-h);
+        }
+        .comm-ch-dot {
+            width:7px; height:7px; border-radius:50%;
+            background:var(--a1); flex-shrink:0;
+        }
+        .comm-feed { display:flex; flex-direction:column; gap:1rem; }
+        .comm-post {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); padding:1.2rem 1.35rem;
+            animation:up .3s ease both;
+            transition:border-color .2s, box-shadow .2s;
+        }
+        .comm-post:hover {
+            border-color:rgba(91,94,244,.2);
+            box-shadow:0 6px 28px rgba(0,0,0,.25);
+        }
+        .comm-post-head {
+            display:flex; align-items:center; gap:.75rem; margin-bottom:.85rem;
+        }
+        .comm-avatar {
+            width:42px; height:42px; border-radius:50%;
+            object-fit:cover; flex-shrink:0;
+            border:2px solid rgba(91,94,244,.3);
+            background:var(--surface);
+            box-shadow:0 0 0 3px rgba(91,94,244,.08);
+        }
+        .comm-avatar-fallback {
+            width:42px; height:42px; border-radius:50%;
+            background:linear-gradient(135deg,var(--a1),var(--a2));
+            display:flex; align-items:center; justify-content:center;
+            font-size:.9rem; font-weight:700; color:#fff; flex-shrink:0;
+        }
+        .comm-user-info { flex:1; min-width:0; }
+        .comm-username {
+            font-size:.88rem; font-weight:700; color:var(--t0);
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            display:flex; align-items:center; gap:2px;
+        }
+        .comm-role {
+            font-size:.65rem; font-weight:700; color:var(--a1);
+            background:rgba(91,94,244,.1); border:1px solid rgba(91,94,244,.18);
+            padding:.1rem .55rem; border-radius:100px; display:inline-block; margin-top:.2rem;
+            letter-spacing:.02em;
+        }
+        .comm-role.teacher  { color:var(--amber); background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.2); }
+        .comm-role.moderator{ color:var(--cyan);  background:rgba(34,211,238,.08); border-color:rgba(34,211,238,.18); }
+        .comm-tick {
+            display:inline-flex; align-items:center; justify-content:center;
+            width:15px; height:15px; border-radius:50%;
+            font-size:.6rem; font-weight:900; margin-left:4px;
+            vertical-align:middle; flex-shrink:0; line-height:1;
+        }
+        .comm-tick.blue   { background:#1d9bf0; color:#fff; }
+        .comm-tick.yellow { background:var(--amber); color:#fff; }
+        .comm-time {
+            font-size:.7rem; color:var(--t2); white-space:nowrap;
+            flex-shrink:0; font-weight:500;
+        }
+        .comm-text {
+            font-size:.89rem; color:var(--t1); line-height:1.7;
+            margin-bottom:.85rem; word-break:break-word;
+        }
+        .comm-text:empty { display:none; }
+        .comm-text p { margin:0; }
+        .comm-images {
+            display:grid; gap:.5rem; margin-bottom:.85rem;
+            border-radius:14px; overflow:hidden;
+        }
+        .comm-images.one  { grid-template-columns:1fr; }
+        .comm-images.two  { grid-template-columns:1fr 1fr; }
+        .comm-images.many { grid-template-columns:1fr 1fr; }
+        .comm-img {
+            width:100%; border-radius:0; object-fit:contain;
+            height:auto; display:block; cursor:pointer;
+            background:rgba(0,0,0,.12);
+            transition:opacity .2s, transform .2s;
+        }
+        .comm-img:hover { opacity:.9; transform:scale(1.01); }
+        .comm-footer {
+            display:flex; align-items:center; gap:.75rem;
+            padding-top:.7rem; border-top:1px solid var(--b0);
+            flex-wrap:wrap;
+        }
+        .comm-reactions {
+            display:flex; align-items:center; gap:.4rem; flex:1; flex-wrap:wrap;
+        }
+        .comm-rxn {
+            display:inline-flex; align-items:center; gap:.3rem;
+            font-size:.75rem; color:var(--t1); font-weight:600;
+            background:rgba(255,255,255,.04); border:1px solid var(--b0);
+            padding:.2rem .6rem; border-radius:100px;
+            transition:background .15s;
+        }
+        .comm-rxn:hover { background:rgba(255,255,255,.08); }
+        .comm-views {
+            font-size:.72rem; color:var(--t2); font-weight:600;
+            display:flex; align-items:center; gap:.3rem; flex-shrink:0;
+        }
+        .comm-load-wrap { text-align:center; margin-top:1.5rem; }
+        .comm-load-btn {
+            display:inline-flex; align-items:center; gap:.5rem;
+            padding:.65rem 2rem; border-radius:100px;
+            background:rgba(91,94,244,.12); border:1px solid rgba(91,94,244,.3);
+            color:#a5b4fc; font-family:inherit; font-size:.84rem;
+            font-weight:700; cursor:pointer; transition:all .2s ease;
+        }
+        .comm-load-btn:hover { background:rgba(91,94,244,.22); border-color:rgba(91,94,244,.5); transform:translateY(-1px); }
+        .comm-load-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+        .comm-spinner {
+            width:14px; height:14px; border-radius:50%;
+            border:2px solid rgba(165,180,252,.25);
+            border-top-color:#a5b4fc;
+            animation:spin .7s linear infinite;
+        }
+        #community-skeleton { display:flex; flex-direction:column; gap:1rem; }
+        .skel-post {
+            background:var(--card); border:1px solid var(--b0);
+            border-radius:var(--r2); padding:1.2rem 1.35rem;
+        }
+        .skel-post-head { display:flex; gap:.75rem; margin-bottom:.85rem; }
+        .skel-ava { width:42px; height:42px; border-radius:50%; flex-shrink:0; }
+        .skel-post-body { display:flex; flex-direction:column; gap:9px; }
+
+        /* ─── Lightbox ────────────────────────────────────────────────────── */
+        #img-lb {
+            display:none; position:fixed; inset:0; z-index:9999;
+            background:rgba(0,0,0,.92); backdrop-filter:blur(14px);
+            align-items:center; justify-content:center; padding:1rem;
+        }
+        #img-lb.show { display:flex; }
+        #img-lb img {
+            max-width:100%; max-height:90vh;
+            border-radius:16px; box-shadow:0 24px 80px rgba(0,0,0,.8);
+        }
+        #img-lb-close {
+            position:absolute; top:1rem; right:1rem;
+            width:38px; height:38px; border-radius:50%;
+            background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+            color:#fff; font-size:1.1rem; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            backdrop-filter:blur(8px); transition:background .2s;
+        }
+        #img-lb-close:hover { background:rgba(255,255,255,.22); }
+
+    </style>
+</head>
+<body>
+
+<!-- ── Page loader overlay ────────────────────────────────────────────────────── -->
+<div id="page-loader">
+    <div class="loader-logo">Learn<span>CoderZ</span></div>
+    <div class="loader-ring"></div>
+    <div class="loader-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- ── Ambient background ─────────────────────────────────────────────────────── -->
+<div class="gfx">
+    <div class="gfx-blob b1"></div>
+    <div class="gfx-blob b2"></div>
+    <div class="gfx-blob b3"></div>
+    <div class="gfx-dots"></div>
+</div>
+
+<!-- ── Progress bar ───────────────────────────────────────────────────────────── -->
+<div id="bar"></div>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────────────── -->
+<nav class="nav">
+    <button class="back-btn" onclick="window.history.back()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+    </button>
+    <div class="nav-logo">Rolex<span>Ex</span></div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────────── -->
+<div class="hero">
+    <div class="hero-inner">
+        <div class="hero-eyebrow">✦ Batch Dashboard</div>
+        <h1 class="hero-title">
+            <span class="hl">Udaan 2027 (Class 10th)</span>
+        </h1>
+        <div class="hero-chips">
+                        <span class="chip">📚 17 Subjects</span>
+                                                            <span class="chip">📺 Today's Classes</span>
+                                    <span class="chip">📢 20 Updates</span>
+                    </div>
+    </div>
+</div>
+
+<!-- ── Tabs ────────────────────────────────────────────────────────────────────── -->
+<div class="tabs-wrap">
+    <div class="tabs-inner">
+        <button class="tab-btn active" onclick="switchTab('description', this)">
+            <span class="tab-icon">📝</span> Overview
+        </button>
+        <button class="tab-btn" onclick="switchTab('live', this)">
+            <span class="tab-icon">📺</span> Live Today
+                                    <span class="tab-count">5</span>
+                    </button>
+        <button class="tab-btn" onclick="switchTab('classes', this)">
+            <span class="tab-icon">🎓</span> Subjects
+            <span class="tab-count">17</span>        </button>
+        <button class="tab-btn" onclick="goToTests()">
+            <span class="tab-icon">📝</span> Tests
+        </button>
+        <button class="tab-btn" onclick="switchTab('announcements', this)">
+            <span class="tab-icon">📢</span> Updates
+            <span class="tab-count">20</span>        </button>
+                <button class="tab-btn" onclick="switchTab('community', this); initCommunity()">
+            <span class="tab-icon">💬</span> Community
+        </button>
+            </div>
+</div>
+
+<!-- ── Main content ────────────────────────────────────────────────────────────── -->
+<main class="content-wrap">
+
+    <!-- ── Overview Tab ──────────────────────────────────────────────────────── -->
+    <div id="description" class="section active">
+
+                <div class="desc-card reveal">
+            <div class="short-desc-wrapper"><!DOCTYPE html>
+<html lang="en">
+ <head>
+   <meta charset="UTF-8" />
+   <style>
+     .description-meta-container {
+       display: flex !important;
+       flex-direction: column !important;
+       gap: 14px !important;
+     }
+
+     .child-container {
+       display: flex !important;
+       align-items: center !important;
+       gap: 12px !important;
+     }
+
+     .icon {
+       width: 32px !important;
+       height: 32px !important;
+     }
+
+     .sub-text {
+       font-size: 14px !important;
+       font-weight: 500 !important;
+     }
+
+     .main-text {
+       font-size: 14px !important;
+       font-weight: 600 !important;
+     }
+
+     .text {
+       font-size: 14px !important;
+       font-weight: 500 !important;
+     }
+
+     .text-container {
+       display: flex !important;
+       flex-direction: column !important;
+       gap: 4px !important;
+     }
+   </style>
+ </head>
+ <body>
+<div class="description-meta-container">
+<div class="child-container"><img class="icon" src="https://static.pw.live/5eb393ee95fab7468a79d189/f463046e-0ed5-43b3-981c-944985082135.png" />
+<div class="text-container"><span class="sub-text">Course Duration: </span> <span class="main-text">07 April 2026 - 31 October 2026</span></div>
+</div>
+<div class="child-container"><img class="icon" src="https://static.pw.live/5eb393ee95fab7468a79d189/972706bc-b79b-41e5-99b4-230290bd296c.png" />
+<div class="text-container"><span class="sub-text"> Validity: </span> <span class="main-text">31 March 2027</span></div>
+</div>
+<div class="child-container"><img class="icon" src="https://static.pw.live/5eb393ee95fab7468a79d189/288f8906-de7a-44c8-8dd9-e9b4dfa15ea7.png" /> Exam guidance at our PW Offline centers<span class="text"><br /></span></div>
+<div class="child-container"><img class="icon" src="https://static.pw.live/5eb393ee95fab7468a79d189/288f8906-de7a-44c8-8dd9-e9b4dfa15ea7.png" /> One-to-one emotional well-being support by PW Prerna counselors<span class="text"><br /></span></div>
+<div class="child-container"><img class="icon" src="https://static.pw.live/5eb393ee95fab7468a79d189/288f8906-de7a-44c8-8dd9-e9b4dfa15ea7.png" /> In-person support and helpdesk at PW Offline centers<span class="text"><br /></span></div>
+<div class="child-container"><img class="icon" src="https://static.pw.live/5eb393ee95fab7468a79d189/a5affa35-0c73-4ca1-8600-65d7ca8a328b.png" />
+<div class="text-container"><span class="sub-text"> Subjects: Physics, Chemistry, Biology, Maths, English (Language &amp; Literature), English (Communicative), SST, Computer Applications, Information Technology, Artificial Intelligence, Sanskrit and Hindi (Course A and Course B).</span></div>
+</div>
+</div>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4d42689b8b57448eadca12d9037c095e","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html></div>
+        </div>
+        
+                <div class="desc-card reveal" style="transition-delay:.05s">
+            <div class="sec-head"><h2>📋 Batch Details</h2></div>
+            <div class="full-desc-wrapper"><!DOCTYPE html>
+<html>
+
+  <head>
+     <style>
+       .desc-container {
+         display: flex;
+         flex-direction: column;
+         padding: 16px 13px;
+       }
+       
+       .desc-row {
+         display: flex;
+         align-items: center;
+         margin-bottom: 16px;
+         border-bottom: 1px solid #efefef;
+         padding: 4px 0;
+       }
+       
+       .desc-row-item-title {
+         font-size: 14px;
+         line-height: 22px;
+         margin-right: 6px;
+       }
+
+       .desc-row-item-content {
+         font-size: 14px;
+         line-height: 18px;
+         margin-right: 6px;
+       }
+     </style>
+  </head>
+
+  <body>
+<div class="desc-container">
+<div class="desc-row">
+<div class="desc-row-item-title">01.</div>
+<div class="desc-row-item-content"><strong>This batch includes comprehensive coverage of all the subjects for CBSE 10th.</strong></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">02.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Faculty members will cover <span class="sub-text">Physics, Chemistry, Biology, Maths, English (Language &amp; Literature), English (Communicative), SST, Computer Applications, Information Technology, Artificial Intelligence, Sanskrit and Hindi (Course A and Course B).</span></span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">03.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">5 Days scheduled classes will be held in a week.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">04.</div>
+<div class="desc-row-item-content"><strong>Classes will be Live, per day 2 classes will be held.</strong></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">05.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Recorded Lectures will be provided for Computer Applications, Artificial Intelligence, Sanskrit and Hindi (Course A and Course B).</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">06.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Duration of the lectures will be 1 hour 15 mins.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">07.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">PDF Notes of each Class will be uploaded on PW App.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">08.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Daily Home Assignments with their Video Solution in Quiz format.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">09.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Dedicated faculties for solving doubts through best-in-class doubt engine.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">10.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Peer-to-Peer doubt solving will be provided.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">11.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Scheduled tests will be held according to the planner.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">12.</div>
+<div class="desc-row-item-content"><strong>Classes starting from - 7th April 2026</strong></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">13.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Complete Syllabus will be covered till October 31,2026</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">14.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Complete Revision of whole syllabus for Final Exam will be concluded by 31st January 2027</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">15.</div>
+<div class="desc-row-item-content"><span style="font-weight: 400;">Chapterwise Handwritten Notes will be provided.</span></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">16.</div>
+<div class="desc-row-item-content">For App/Web Navigation the latest Feature Updates &amp; Student Support please subscribe to our Support YouTube channel:<br /><a href="https://www.youtube.com/@pwstudentsupport" target="_blank" rel="noopener nofollow noreferrer">https://www.youtube.com/@pwstudentsupport</a></div>
+</div>
+<div class="desc-row">
+<div class="desc-row-item-title">17.</div>
+<div class="desc-row-item-content">The registration fee is included in the price of the batch which is showing on the website. The breakup of registration fee will be mentioned on invoice. You may be provided with access to Notes, PYQ&rsquo;s. Mock Test Papers, AITS Test Series, Previous year batches &amp; other materials, the access can vary depending on the batch you purchase, so that exact details might change from one batch to another.</div>
+</div>
+</div>
+</body>
+</html></div>
+        </div>
+        
+        
+                        <div class="divider"></div>
+        <div class="reveal">
+            <div class="sec-head">
+                <h2>👨‍🏫 Your Teachers</h2>
+                <span class="count">12 educators</span>
+            </div>
+            <div class="teachers-row">
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/21333e3c-0538-4e25-b69b-6be53e9d4db2.png" alt="Rakshak Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Rakshak Sir</div>
+                        <div class="tc-sub">Physics by Rakshak Sir</div>
+                                                <span class="tc-exp">⭐ 8+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/020cd6e0-3314-480b-8505-5f25384d7c32.png" alt="Sunil Hingorani Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Sunil Hingorani Sir</div>
+                        <div class="tc-sub">Chemistry by Sunil Sir</div>
+                                                <span class="tc-exp">⭐ 7+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/d1da77f4-9d12-4689-a97e-7a11b8806085.png" alt="Samridhi Sharma Ma&#039;am" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Samridhi Sharma Ma&#039;am</div>
+                        <div class="tc-sub">Science</div>
+                                                <span class="tc-exp">⭐ 8+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/5eaedf68-e6e0-47ba-bab4-00a6858a7dea.png" alt="Akshay Tyagi Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Akshay Tyagi Sir</div>
+                        <div class="tc-sub">Science by Akshay Sir</div>
+                                                <span class="tc-exp">⭐ 10+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/7dc26c18-1e66-47ff-8a29-13da4ccec1d2.png" alt="Ritik Mishra Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Ritik Mishra Sir</div>
+                        <div class="tc-sub">Mathematics by Ritik Sir</div>
+                                                <span class="tc-exp">⭐ 7+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/eb292567-d774-4a58-9f76-a7ac20827e8f.png" alt="Uday Pratap Singh Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Uday Pratap Singh Sir</div>
+                        <div class="tc-sub">Mathematics By Uday Sir</div>
+                                                <span class="tc-exp">⭐ 4+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/63ec57f2-3bb6-481a-8f1b-45e3686224e8.png" alt="Siddharth Sharma Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Siddharth Sharma Sir</div>
+                        <div class="tc-sub">SST By Siddharth Sir</div>
+                                                <span class="tc-exp">⭐ 11+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/bf24d447-685d-414f-8287-ca8df4ed2602.png" alt="Ujjvala Punj Ma&#039;am" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Ujjvala Punj Ma&#039;am</div>
+                        <div class="tc-sub">SST</div>
+                                                <span class="tc-exp">⭐ 5+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/8c7553ec-2980-4438-9b3e-f2db7c4abca8.png" alt="Anurag Tyagi Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Anurag Tyagi Sir</div>
+                        <div class="tc-sub">English</div>
+                                                <span class="tc-exp">⭐ 9+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/4f5c8105-abdd-4d7d-b081-3a6d85e700dc.png" alt="Aditi Purohit Ma&#039;am" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Aditi Purohit Ma&#039;am</div>
+                        <div class="tc-sub">Hindi Course A</div>
+                                                <span class="tc-exp">⭐ 4+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/d50b0f03-f0f7-4bb6-995d-0e3060fb0029.png" alt="Prateik Sharma Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Prateik Sharma Sir</div>
+                        <div class="tc-sub">AI</div>
+                                                <span class="tc-exp">⭐ 10+ yrs</span>
+                                            </div>
+                </div>
+                                <div class="tc">
+                    <div class="tc-arch">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/e3369bb6-ef5c-4775-96e0-92296c9b1b1b.png" alt="Aman Patel Sir" class="tc-img"
+                             onerror="this.style.display='none'">
+                                            </div>
+                    <div class="tc-body">
+                        <div class="tc-name">Aman Patel Sir</div>
+                        <div class="tc-sub">Math</div>
+                                                <span class="tc-exp">⭐ 6+ yrs</span>
+                                            </div>
+                </div>
+                            </div>
+        </div>
+            </div>
+
+    <!-- ── Live Today Tab ────────────────────────────────────────────────────── -->
+    <div id="live" class="section">
+                <div class="live-grid">
+                                    <a href="https://rolexcoderz.com/RC/player/?batch_id=67790151518b938bc630052d&amp;child_id=6a153b15053434f56b6b18b8&amp;title=Human+Eye+%26+the+Colorful+World+%3A+Short+Notes&amp;duration=00%3A00%3A00&amp;subject_id=69d3967d70c3a1e721b7d3dc" class="lc reveal" target="_blank" rel="noopener">
+                            <div class="lc-thumb">
+                    <img src="https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png" alt="Human Eye &amp; the Colorful World : Short Notes"
+                         onerror="this.src='https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png'">
+                    <div class="lc-thumb-overlay"></div>
+                    <span class="lc-badge badge-ended-s">✓ Ended</span>
+                    <div class="lc-play"><div class="lc-play-icon">▶</div></div>                </div>
+                <div class="lc-body">
+                    <div class="lc-subject">Physics by Rakshak Sir</div>
+                    <div class="lc-topic">Human Eye &amp; the Colorful World : Short Notes</div>
+                    <div class="lc-meta">
+                        <span>🕐 12:00 PM – 12:00 PM</span>                                            </div>
+                                        <div class="lc-tags">
+                                                <span class="lc-tag">Short Notes by Rakshak Sir || (Only PDF)</span>
+                                            </div>
+                                        <div class="lc-btn lc-btn-on">🎬 Watch Recording</div>
+                </div>
+            </a>                                    <a href="https://rolexcoderz.com/RC/player/?batch_id=67790151518b938bc630052d&amp;child_id=6a154cff93d2917e9559a192&amp;title=Class+Cancelled+%3A+Due+To+Some+Issue&amp;duration=00%3A00%3A00&amp;subject_id=69d396c9515bf4a0a1aa20eb" class="lc reveal" target="_blank" rel="noopener">
+                            <div class="lc-thumb">
+                    <img src="https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png" alt="Class Cancelled : Due To Some Issue"
+                         onerror="this.src='https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png'">
+                    <div class="lc-thumb-overlay"></div>
+                    <span class="lc-badge badge-ended-s">✓ Ended</span>
+                    <div class="lc-play"><div class="lc-play-icon">▶</div></div>                </div>
+                <div class="lc-body">
+                    <div class="lc-subject">Biology by Samridhi Ma&#039;am</div>
+                    <div class="lc-topic">Class Cancelled : Due To Some Issue</div>
+                    <div class="lc-meta">
+                        <span>🕐 05:00 PM – 05:00 PM</span>                                            </div>
+                                        <div class="lc-btn lc-btn-on">🎬 Watch Recording</div>
+                </div>
+            </a>                                    <a href="https://rolexcoderz.com/RC/player/?batch_id=67790151518b938bc630052d&amp;child_id=6a145cab46611093630851bd&amp;title=Life+Processes+07+%3A+Lymph+and+Transportation+in+Plants&amp;duration=01%3A24%3A04&amp;subject_id=69d3970e15586f1e1acad184" class="lc reveal" target="_blank" rel="noopener">
+                            <div class="lc-thumb">
+                    <img src="https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png" alt="Life Processes 07 : Lymph and Transportation in Plants"
+                         onerror="this.src='https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png'">
+                    <div class="lc-thumb-overlay"></div>
+                    <span class="lc-badge badge-ended-s">✓ Ended</span>
+                    <div class="lc-play"><div class="lc-play-icon">▶</div></div>                </div>
+                <div class="lc-body">
+                    <div class="lc-subject">Science by Akshay Sir</div>
+                    <div class="lc-topic">Life Processes 07 : Lymph and Transportation in Plants</div>
+                    <div class="lc-meta">
+                        <span>🕐 05:00 PM – 06:24 PM</span>                        <span>⏱ 01:24:04</span>                    </div>
+                                        <div class="lc-tags">
+                                                <span class="lc-tag">Life Processes</span>
+                                            </div>
+                                        <div class="lc-btn lc-btn-on">🎬 Watch Recording</div>
+                </div>
+            </a>                                    <a href="https://rolexcoderz.com/RC/player/?batch_id=67790151518b938bc630052d&amp;child_id=6a1551d57d9d2958d7a571b4&amp;title=Chemical+Reactions+and+Equations+07+%3A+Redox+Reactions+%7C%7C+Type+of+Redox+Reactions+-+Effects+in+Daily+Life+%7C%7C+Extra&amp;duration=01%3A46%3A54&amp;subject_id=69d396a3414f7f861b887a88" class="lc reveal" target="_blank" rel="noopener">
+                            <div class="lc-thumb">
+                    <img src="https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png" alt="Chemical Reactions and Equations 07 : Redox Reactions || Type of Redox Reactions - Effects in Daily Life || Extra"
+                         onerror="this.src='https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png'">
+                    <div class="lc-thumb-overlay"></div>
+                    <span class="lc-badge badge-ended-s">✓ Ended</span>
+                    <div class="lc-play"><div class="lc-play-icon">▶</div></div>                </div>
+                <div class="lc-body">
+                    <div class="lc-subject">Chemistry by Sunil Sir</div>
+                    <div class="lc-topic">Chemical Reactions and Equations 07 : Redox Reactions || Type of Redox Reactions - Effects in Daily Life || Extra</div>
+                    <div class="lc-meta">
+                        <span>🕐 05:00 PM – 06:46 PM</span>                        <span>⏱ 01:46:54</span>                    </div>
+                                        <div class="lc-tags">
+                                                <span class="lc-tag">Chemical Reactions and Equations</span>
+                                            </div>
+                                        <div class="lc-btn lc-btn-on">🎬 Watch Recording</div>
+                </div>
+            </a>                                    <a href="https://rolexcoderz.com/RC/player/?batch_id=67790151518b938bc630052d&amp;child_id=6a145d206c5cef8cec3048a1&amp;title=The+Thief%27s+Story+%3A+One+Shot&amp;duration=01%3A37%3A09&amp;subject_id=664c49d884a2730018a9a6a0" class="lc reveal" target="_blank" rel="noopener">
+                            <div class="lc-thumb">
+                    <img src="https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png" alt="The Thief&#039;s Story : One Shot"
+                         onerror="this.src='https://i.ibb.co/fdgHcWRx/f69ed82b-7169-45fc-a82b-915e453c6340-1.png'">
+                    <div class="lc-thumb-overlay"></div>
+                    <span class="lc-badge badge-ended-s">✓ Ended</span>
+                    <div class="lc-play"><div class="lc-play-icon">▶</div></div>                </div>
+                <div class="lc-body">
+                    <div class="lc-subject">English (Language &amp; Literature)</div>
+                    <div class="lc-topic">The Thief&#039;s Story : One Shot</div>
+                    <div class="lc-meta">
+                        <span>🕐 07:00 PM – 08:37 PM</span>                        <span>⏱ 01:37:09</span>                    </div>
+                                        <div class="lc-tags">
+                                                <span class="lc-tag">The Thief&#039;s Story</span>
+                                            </div>
+                                        <div class="lc-btn lc-btn-on">🎬 Watch Recording</div>
+                </div>
+            </a>                    </div>
+            </div>
+
+    <!-- ── Subjects Tab ──────────────────────────────────────────────────────── -->
+    <div id="classes" class="section">
+                <div class="bento">
+                                    <a href="topics/?batchId=67790151518b938bc630052d&id=67793ecafaa51b7b207ff8fe&name=Notices&slug=notices-897639" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/95a17012-9abb-4254-82d9-2b18ce08d9dc.png"
+                         alt="Notices"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Notices</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 19 lectures</span>
+                                            </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d39cb53dc94f34bcbbde22&name=Physics+by+Rakshak+Sir&slug=physics-by-rakshak-sir-962027&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvMjEzMzNlM2MtMDUzOC00ZTI1LWI2OWItNmJlNTNlOWQ0ZGIyLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Physics by Rakshak Sir"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Physics by Rakshak Sir</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 13 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/21333e3c-0538-4e25-b69b-6be53e9d4db2.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Rakshak Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d39ccf6022d08eeed438bd&name=Chemistry+by+Sunil+Sir&slug=chemistry-by-sunil-sir-238162&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvMDIwY2Q2ZTAtMzMxNC00ODBiLTg1MDUtNWYyNTM4NGQ3YzMyLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Chemistry by Sunil Sir"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Chemistry by Sunil Sir</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 10 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/020cd6e0-3314-480b-8505-5f25384d7c32.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Sunil Hingorani Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d39cebc933558ba19be3b7&name=Biology+by+Samridhi+Ma%27am&slug=biology-by-samridhi-ma-am-083749&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvZDFkYTc3ZjQtOWQxMi00Njg5LWE5N2UtN2ExMWI4ODA2MDg1LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Biology by Samridhi Ma&#039;am"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Biology by Samridhi Ma&#039;am</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 12 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/d1da77f4-9d12-4689-a97e-7a11b8806085.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Samridhi Sharma Ma&#039;am</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d39d0cb693405495af4219&name=Science+by+Akshay+Sir&slug=science-by-akshay-sir-997995&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvNWVhZWRmNjgtZTZlMC00N2JhLWJhYjQtMDBhNjg1OGE3ZGVhLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Science by Akshay Sir"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Science by Akshay Sir</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 24 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/5eaedf68-e6e0-47ba-bab4-00a6858a7dea.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Akshay Tyagi Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d2bbb4a932c5d8f4ffc074&name=Mathematics+by+Ritik+Sir&slug=mathematics-by-ritik-sir-520080&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvN2RjMjZjMTgtMWU2Ni00N2ZmLThhMjktMTNkYTRjY2VjMWQyLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Mathematics by Ritik Sir"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Mathematics by Ritik Sir</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 18 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/7dc26c18-1e66-47ff-8a29-13da4ccec1d2.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Ritik Mishra Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d2bbe37fafbba62a62e127&name=Mathematics+By+Uday+Sir&slug=mathematics-by-uday-sir-128900&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vZWIyOTI1NjctZDc3NC00YTU4LTlmNzYtYTdhYzIwODI3ZThmLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Mathematics By Uday Sir"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Mathematics By Uday Sir</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 19 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/eb292567-d774-4a58-9f76-a7ac20827e8f.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Uday Pratap Singh Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d2bc71c141fcb0bbc554ff&name=SST+By+Siddharth+Sir&slug=sst-by-siddharth-sir-837287&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vNjNlYzU3ZjItM2JiNi00ODFhLThmMWItNDVlMzY4NjIyNGU4LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="SST By Siddharth Sir"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">SST By Siddharth Sir</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 21 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/63ec57f2-3bb6-481a-8f1b-45e3686224e8.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Siddharth Sharma Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d2bca656a18df26edf98bf&name=SST+By+Ujjvala+Ma%27am&slug=sst-by-ujjvala-ma-am-367452&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vYmYyNGQ0NDctNjg1ZC00MTRmLTgyODctY2E4ZGY0ZWQyNjAyLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="SST By Ujjvala Ma&#039;am"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">SST By Ujjvala Ma&#039;am</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 17 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/bf24d447-685d-414f-8287-ca8df4ed2602.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Ujjvala Punj Ma&#039;am</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69d2bc24f19c7bd0489864ef&name=English+%28Language+%26+Literature%29&slug=english--language-and-literature--790879&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvOGM3NTUzZWMtMjk4MC00NDM4LTliM2UtZjJkYjdjNGFiY2E4LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="English (Language &amp; Literature)"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">English (Language &amp; Literature)</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 9 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/8c7553ec-2980-4438-9b3e-f2db7c4abca8.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Anurag Tyagi Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=67795043a97989c41ba3a283&name=English+%28Communicative%29&slug=english--communicative--631225&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvOGM3NTUzZWMtMjk4MC00NDM4LTliM2UtZjJkYjdjNGFiY2E4LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="English (Communicative)"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">English (Communicative)</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 9 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/8c7553ec-2980-4438-9b3e-f2db7c4abca8.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Anurag Tyagi Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=6992df81f3138a942336057a&name=Hindi+Course+A&slug=hindi-course-a-984149&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vNGY1YzgxMDUtYWJkZC00ZDdkLWIwODEtM2E2ZDg1ZTcwMGRjLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Hindi Course A"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Hindi Course A</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 7 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/4f5c8105-abdd-4d7d-b081-3a6d85e700dc.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Aditi Purohit Ma&#039;am</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=6992df80663c238e6b50d2d8&name=Hindi+Course+B&slug=hindi-course-b-039733&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vNGY1YzgxMDUtYWJkZC00ZDdkLWIwODEtM2E2ZDg1ZTcwMGRjLnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Hindi Course B"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Hindi Course B</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 7 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/4f5c8105-abdd-4d7d-b081-3a6d85e700dc.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Aditi Purohit Ma&#039;am</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69bfa5d306a56d137682d7e5&name=Computer+Applications&slug=computer-applications--050532&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vZDUwYjBmMDMtZjBmNy00YmI2LTk5NWQtMGUzMDYwZmIwMDI5LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Computer Applications"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Computer Applications</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 1 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/d50b0f03-f0f7-4bb6-995d-0e3060fb0029.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Prateik Sharma Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69bfa5e8f5f2aa0149d9a3c4&name=Information+Technology&slug=information-technology-855441&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vZDUwYjBmMDMtZjBmNy00YmI2LTk5NWQtMGUzMDYwZmIwMDI5LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/789e3046-bf61-4030-bad2-d02030877dec.jpg"
+                         alt="Information Technology"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Information Technology</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 1 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/d50b0f03-f0f7-4bb6-995d-0e3060fb0029.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Prateik Sharma Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <a href="topics/?batchId=67790151518b938bc630052d&id=69bfa5f617305b12595f1243&name=Artificial+Intelligence&slug=artificial-intelligence-766914&rci=aHR0cHM6Ly9zdGF0aWMucHcubGl2ZS81ZWIzOTNlZTk1ZmFiNzQ2OGE3OWQxODkvQURNSU4vZDUwYjBmMDMtZjBmNy00YmI2LTk5NWQtMGUzMDYwZmIwMDI5LnBuZw%3D%3D" class="subj-card reveal">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg"
+                         alt="Artificial Intelligence"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Artificial Intelligence</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-count">🎓 1 lectures</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/d50b0f03-f0f7-4bb6-995d-0e3060fb0029.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Prateik Sharma Sir</span>
+                    </div>
+                                    </div>
+                <div class="subj-arrow">→</div>            </a>                                    <div class="subj-card reveal" onclick="showComingSoon('Sanskrit')">
+                            <div class="subj-img-wrap">
+                    <img class="subj-img" src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/9a38d219-1219-48cf-9acb-e3925d42d2c1.png"
+                         alt="Sanskrit"
+                         onerror="this.src='https://static.pw.live/react-batches/assets/svg/subjects/defaultSubject.svg'">
+                </div>
+                <div class="subj-info">
+                    <div class="subj-name">Sanskrit</div>
+                    <div class="subj-meta">
+                                                <span class="badge badge-soon">⏳ Coming soon</span>
+                                            </div>
+                                        <div class="subj-teacher-row">
+                                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/e3369bb6-ef5c-4775-96e0-92296c9b1b1b.png" alt="" class="subj-tpic"
+                             onerror="this.style.display='none'">
+                                                <span class="subj-tname">Aman Patel Sir</span>
+                    </div>
+                                    </div>
+                            </div>                    </div>
+            </div>
+
+    <!-- ── Announcements Tab ─────────────────────────────────────────────────── -->
+    <div id="announcements" class="section">
+                <div class="ann-list">
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/a38d6abe-6ed4-4411-9b7f-d0e721106a64.jpg" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important</div>
+                                            </div>
+                    <div class="ann-text">Olympiad Wallah Students Creates History 🚀 Proud Moment || <br />
+Join us Now - https://www.youtube.com/live/TQbWkCcLLpY?si=McoqCxv_yNV3t726</div>                    <div class="ann-date">📅 26 May 2026, 03:31 PM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/f5cde2a3-fbc8-45ff-9345-e96d8b6ff01b.jpg" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important</div>
+                                            </div>
+                    <div class="ann-text">Olympiad Wallah Students Creates History 🚀 Proud Moment || <br />
+Join us Now - https://www.youtube.com/live/TQbWkCcLLpY?si=McoqCxv_yNV3t726</div>                    <div class="ann-date">📅 26 May 2026, 03:30 PM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/48b56ad3-7eb4-4012-8553-fce11a39ca7c.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important Update</div>
+                                            </div>
+                    <div class="ann-text">Important Update</div>                    <div class="ann-date">📅 26 May 2026, 03:00 PM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/4c7cde04-cd69-4239-8dcf-f5c24d6cc960.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">Extra Class Update</div>
+                                            </div>
+                    <div class="ann-text">Extra Class Update</div>                    <div class="ann-date">📅 26 May 2026, 08:04 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/f04089bc-8b9e-4b2c-927a-a07a0667477f.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important Update</div>
+                                            </div>
+                    <div class="ann-text">Important Update</div>                    <div class="ann-date">📅 26 May 2026, 07:55 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/a6d01d91-58b9-4a37-9bfa-0c853a77cd84.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">Class Cancel Update</div>
+                                            </div>
+                    <div class="ann-text">Due to some issue, the class scheduled on 05:00 PM has been cancelled.</div>                    <div class="ann-date">📅 26 May 2026, 07:34 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/f3ee6b1a-1750-4eba-9dd6-1d97e74670b1.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Short Notes Update</div>
+                                            </div>
+                    <div class="ann-text">Short Notes Update</div>                    <div class="ann-date">📅 26 May 2026, 06:30 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/6c56b403-fea6-4453-851c-831b7d72daa9.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Handwritten Notes Update</div>
+                                            </div>
+                    <div class="ann-text">Handwritten Notes Update</div>                    <div class="ann-date">📅 26 May 2026, 06:10 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/a20a79e3-40ee-48f8-a524-1acb28c2fc87.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">New Chapter Update</div>
+                                            </div>
+                    <div class="ann-text">New Chapter Update</div>                    <div class="ann-date">📅 26 May 2026, 06:08 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/0f116bdf-68fc-4931-acab-55dc30810e88.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">New Chapter Update</div>
+                                            </div>
+                    <div class="ann-text">New Chapter Update</div>                    <div class="ann-date">📅 26 May 2026, 06:07 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/e8ba4936-72dd-4972-bf00-6276dc4fdc02.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">Important Update</div>
+                                            </div>
+                    <div class="ann-text">Important Update</div>                    <div class="ann-date">📅 26 May 2026, 05:30 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/d5d6e071-62a5-4d38-a9b0-73a8962dc663.jpeg" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important Update</div>
+                                            </div>
+                    <div class="ann-text">🚨  URGENT LIVE!<br />
+<br />
+Aaj raat ek big surprise aane wala hai 👀<br />
+NEET aspirants, live miss mat karna!<br />
+<br />
+⏰ Aaj 8 PM<br />
+   https://www.youtube.com/watch?v=Cj21VQVhvk8</div>                    <div class="ann-date">📅 25 May 2026, 03:16 PM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/e5856685-16c8-4890-a268-eeb1704d3337.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Handwritten Notes Update</div>
+                                            </div>
+                    <div class="ann-text">Handwritten Notes Update</div>                    <div class="ann-date">📅 25 May 2026, 02:22 PM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/9a2c9686-3a12-4db0-876b-782fbee5b5d3.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important update</div>
+                                            </div>
+                    <div class="ann-text">Important update</div>                    <div class="ann-date">📅 25 May 2026, 01:24 PM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/ae743cbb-9753-4fe9-9a0d-fc081e508d6a.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-general">📢 Update</span>
+                                                <div class="ann-heading">Important Update</div>
+                                            </div>
+                    <div class="ann-text">Important Update</div>                    <div class="ann-date">📅 25 May 2026, 10:28 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/170951f0-a692-4d07-9c07-62e356fddaa7.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">Live Instead of Recorded</div>
+                                            </div>
+                    <div class="ann-text">Aditi Purohit Ma&#039;am will take a live class in place of the recorded class Monday @ 03:00 PM.</div>                    <div class="ann-date">📅 25 May 2026, 08:43 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/5ed68f5b-0b0d-43b3-88dd-27b9b0b0b9bb.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">New Chapter Update</div>
+                                            </div>
+                    <div class="ann-text">New Chapter Update</div>                    <div class="ann-date">📅 25 May 2026, 07:07 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/6f0b6eb9-f66a-4d17-b704-cc49168374cc.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">New Chapter Update</div>
+                                            </div>
+                    <div class="ann-text">New Chapter Update</div>                    <div class="ann-date">📅 25 May 2026, 06:37 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/f3db9ae1-9b93-4305-93aa-eb3db736581b.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">New Chapter Update</div>
+                                            </div>
+                    <div class="ann-text">New Chapter Update</div>                    <div class="ann-date">📅 25 May 2026, 06:37 AM</div>                </div>
+            </div>
+                        <div class="ann-card reveal">
+                                <img src="https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/4851be2f-5876-4ce3-a184-941a80a9e4bb.png" class="ann-img" alt="Announcement"
+                     onerror="this.style.display='none'">
+                                <div class="ann-body">
+                    <div class="ann-top">
+                        <span class="ann-badge ann-lecture">🎬 Lecture</span>
+                                                <div class="ann-heading">Class Rescheduled</div>
+                                            </div>
+                    <div class="ann-text">Class Rescheduled</div>                    <div class="ann-date">📅 23 May 2026, 01:56 PM</div>                </div>
+            </div>
+                    </div>
+            </div>
+
+    <!-- ── Community Tab ────────────────────────────────────────────────────── -->
+        <div id="community" class="section">
+        <div class="comm-channels" id="comm-channels">
+                        <button class="comm-ch-btn active"
+                    data-channel-id="699c42769aaf9d99e707849c"
+                    onclick="selectChannel(this, '699c42769aaf9d99e707849c')">
+                <span class="comm-ch-dot"></span>
+                Student Discussion Channel            </button>
+                        <button class="comm-ch-btn "
+                    data-channel-id="69ad1935a3543605f84d0676"
+                    onclick="selectChannel(this, '69ad1935a3543605f84d0676')">
+                <span class="comm-ch-dot"></span>
+                Student Discussion Channel            </button>
+                        <button class="comm-ch-btn "
+                    data-channel-id="699c42769aaf9d99e707849a"
+                    onclick="selectChannel(this, '699c42769aaf9d99e707849a')">
+                <span class="comm-ch-dot"></span>
+                Teacher Feeds            </button>
+                        <button class="comm-ch-btn "
+                    data-channel-id="69ad1935a3543605f84d0674"
+                    onclick="selectChannel(this, '69ad1935a3543605f84d0674')">
+                <span class="comm-ch-dot"></span>
+                Teacher Feeds            </button>
+                    </div>
+
+        <div id="community-skeleton" style="display:none">
+                        <div class="skel-post">
+                <div class="skel-post-head">
+                    <div class="skel skel-ava"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:7px;padding-top:4px">
+                        <div class="skel skel-line" style="width:120px"></div>
+                        <div class="skel skel-line" style="width:60px;height:10px"></div>
+                    </div>
+                </div>
+                <div class="skel-post-body">
+                    <div class="skel skel-line"></div>
+                    <div class="skel skel-line" style="width:75%"></div>
+                </div>
+            </div>
+                        <div class="skel-post">
+                <div class="skel-post-head">
+                    <div class="skel skel-ava"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:7px;padding-top:4px">
+                        <div class="skel skel-line" style="width:120px"></div>
+                        <div class="skel skel-line" style="width:60px;height:10px"></div>
+                    </div>
+                </div>
+                <div class="skel-post-body">
+                    <div class="skel skel-line"></div>
+                    <div class="skel skel-line" style="width:75%"></div>
+                </div>
+            </div>
+                        <div class="skel-post">
+                <div class="skel-post-head">
+                    <div class="skel skel-ava"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:7px;padding-top:4px">
+                        <div class="skel skel-line" style="width:120px"></div>
+                        <div class="skel skel-line" style="width:60px;height:10px"></div>
+                    </div>
+                </div>
+                <div class="skel-post-body">
+                    <div class="skel skel-line"></div>
+                    <div class="skel skel-line" style="width:75%"></div>
+                </div>
+            </div>
+                        <div class="skel-post">
+                <div class="skel-post-head">
+                    <div class="skel skel-ava"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:7px;padding-top:4px">
+                        <div class="skel skel-line" style="width:120px"></div>
+                        <div class="skel skel-line" style="width:60px;height:10px"></div>
+                    </div>
+                </div>
+                <div class="skel-post-body">
+                    <div class="skel skel-line"></div>
+                    <div class="skel skel-line" style="width:75%"></div>
+                </div>
+            </div>
+                    </div>
+
+        <div class="comm-feed" id="comm-feed"></div>
+
+        <div class="comm-load-wrap" id="comm-load-wrap" style="display:none">
+            <button class="comm-load-btn" id="comm-load-btn" onclick="loadMorePosts()">
+                Load More Posts
+            </button>
+        </div>
+    </div>
+    
+</main>
+
+<!-- ── Coming Soon Popup ───────────────────────────────────────────────────────── -->
+<div id="cs-overlay" onclick="hideCS(event)">
+    <div id="cs-popup">
+        <span class="cs-icon">⏳</span>
+        <div class="cs-title">Not Available Yet</div>
+        <div class="cs-sub" id="cs-name"></div>
+        <p class="cs-msg">Content for this subject hasn't been uploaded yet. It will be available soon — stay tuned!</p>
+        <button class="cs-btn" onclick="hideCS()">Got it!</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    /* ── Progress bar ─────────────────────────────────────────────────────── */
+    const bar = document.getElementById('bar');
+    let pv = 0, pt;
+    function pSet(v) { pv = v; bar.style.width = v + '%'; }
+    function pStart() {
+        bar.style.opacity = '1'; bar.classList.remove('fin'); pSet(0);
+        pt = setInterval(() => { if (pv < 88) pSet(pv + (88 - pv) * .1 + .3); }, 110);
+    }
+    function pDone() {
+        clearInterval(pt); pSet(100);
+        setTimeout(() => bar.classList.add('fin'), 260);
+        setTimeout(() => { bar.classList.remove('fin'); pSet(0); bar.style.opacity = '1'; }, 680);
+    }
+
+    /* ── Page loader ──────────────────────────────────────────────────────── */
+    const loader = document.getElementById('page-loader');
+    pStart();
+    window.addEventListener('load', function () {
+        pDone();
+        setTimeout(() => loader.classList.add('hidden'), 400);
+    });
+    // Failsafe — hide after 3s regardless
+    setTimeout(() => { pDone(); loader.classList.add('hidden'); }, 3000);
+
+    /* ── Tab switching ────────────────────────────────────────────────────── */
+    window.switchTab = function (id, btn) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+        observeReveal();
+    };
+
+    /* ── Coming Soon popup ────────────────────────────────────────────────── */
+    window.showComingSoon = function (name) {
+        document.getElementById('cs-name').textContent = name;
+        document.getElementById('cs-overlay').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    };
+    window.hideCS = function (e) {
+        if (e && e.target.id !== 'cs-overlay') return;
+        document.getElementById('cs-overlay').classList.remove('show');
+        document.body.style.overflow = '';
+    };
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.getElementById('cs-overlay').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    });
+
+    /* ── Scroll reveal ────────────────────────────────────────────────────── */
+    window.observeReveal = function () {
+        const els = document.querySelectorAll('.reveal:not(.visible)');
+        if (!els.length) return;
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('visible'), i * 55);
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.06 });
+        els.forEach(el => io.observe(el));
+    };
+    document.addEventListener('DOMContentLoaded', observeReveal);
+
+    window.goToTests = function() {
+        const batchId = new URLSearchParams(window.location.search).get('batchId') || '';
+        window.location.href = '/test?batchId=' + encodeURIComponent(batchId);
+    };
+})();
+</script>
+<!-- ── Image Lightbox ─────────────────────────────────────────────────────────── -->
+<div id="img-lb" onclick="closeLb(event)">
+    <button id="img-lb-close" onclick="closeLb()">✕</button>
+    <img src="" alt="" id="img-lb-img">
+</div>
+
+<script>
+/* ── Community ─────────────────────────────────────────────────────────────── */
+(function() {
+    const PROXY = 'https://rcxapi.vercel.app/';
+    let currentChannel = null;
+    let currentPage    = 1;
+    let isLoading      = false;
+    let communityInited = false;
+
+    // Decode URL-encoded HTML descriptions
+    function decodeDesc(raw) {
+        if (!raw) return '';
+        try { raw = decodeURIComponent(raw); } catch(e) {}
+        // strip tags except <br> and <p>
+        return raw
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<p>/gi, '')
+            .replace(/<\/p>/gi, '\n')
+            .replace(/<[^>]+>/g, '')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        return d.toLocaleString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true});
+    }
+
+    function timeAgo(iso) {
+        if (!iso) return '';
+        const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+        if (diff < 60)   return 'just now';
+        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+        return Math.floor(diff/86400) + 'd ago';
+    }
+
+    function rxnEmoji(key) {
+        return {heart:'❤️', smile:'😊', laugh:'😂', like:'👍', fire:'🔥'}[key] || key;
+    }
+
+    function renderPost(p) {
+        const user = p.user || {};
+        const name = user.name || 'User';
+        const pic  = user.profileImage || '';
+        const isTeacher   = (user.roles||[]).includes('teacher');
+        const isModerator = (user.roles||[]).includes('moderator');
+        const text = decodeDesc(p.description || '');
+        const imgs = (p.attachmentUrls||[]).filter(a => a.type === 'images');
+        const rxns = p.post_reactions || p.reactions || {};
+        const views = (p.views||[]).reduce ? p.views.reduce((a,b)=>a+(typeof b==='number'?b:0),0) : (p.totalUniqueViews||0);
+
+        const tickHtml = isTeacher
+            ? `<span class="comm-tick blue" title="Verified Teacher">✓</span>`
+            : isModerator
+            ? `<span class="comm-tick yellow" title="Moderator">✓</span>`
+            : '';
+
+        const avatarHtml = pic
+            ? `<img class="comm-avatar" src="${pic}" alt="${name}" onerror="this.outerHTML='<div class=\\'comm-avatar-fallback\\'>${name.charAt(0).toUpperCase()}</div>'">`
+            : `<div class="comm-avatar-fallback">${name.charAt(0).toUpperCase()}</div>`;
+
+        const roleHtml = isTeacher
+            ? `<span class="comm-role teacher">👨‍🏫 Teacher</span>`
+            : isModerator
+            ? `<span class="comm-role moderator">🛡️ Moderator</span>`
+            : `<span class="comm-role">🎓 Student</span>`;
+
+        let imgsHtml = '';
+        if (imgs.length > 0) {
+            const cls = imgs.length === 1 ? 'one' : imgs.length === 2 ? 'two' : 'many';
+            imgsHtml = `<div class="comm-images ${cls}">` +
+                imgs.slice(0,4).map(img =>
+                    `<img class="comm-img" src="${img.url}" alt="" loading="lazy" onclick="openLb(this.src)">`
+                ).join('') +
+            `</div>`;
+        }
+
+        const rxnHtml = Object.entries(rxns)
+            .filter(([,v]) => v > 0)
+            .map(([k,v]) => `<span class="comm-rxn has-val">${rxnEmoji(k)} ${v}</span>`)
+            .join('');
+        const rxnLine = rxnHtml; 
+
+        return `<div class="comm-post">
+            <div class="comm-post-head">
+                ${avatarHtml}
+                <div class="comm-user-info">
+                    <div class="comm-username">${name}${tickHtml}</div>
+                    ${roleHtml}
+                </div>
+                <div class="comm-time">${timeAgo(p.createdAt)}</div>
+            </div>
+            ${text ? `<div class="comm-text">${text.replace(/\n/g,'<br>')}</div>` : ''}
+            ${imgsHtml}
+            <div class="comm-footer">
+                <div class="comm-reactions">${rxnLine}</div>
+                ${views > 0 ? `<div class="comm-views">👁 ${views}</div>` : ''}
+                ${p.total_comments > 0 ? `<div class="comm-views">💬 ${p.total_comments}</div>` : ''}
+            </div>
+        </div>`;
+    }
+
+    async function fetchPosts(channelId, page) {
+        const res = await fetch(PROXY + '?action=get_community_posts', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({channel_id: channelId, page: page})
+        });
+        return res.json();
+    }
+
+    window.selectChannel = function(btn, channelId) {
+        if (isLoading) return;
+        document.querySelectorAll('.comm-ch-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentChannel = channelId;
+        currentPage    = 1;
+        document.getElementById('comm-feed').innerHTML = '';
+        document.getElementById('comm-load-wrap').style.display = 'none';
+        loadPosts(true);
+    };
+
+    async function loadPosts(initial = false) {
+        if (isLoading || !currentChannel) return;
+        isLoading = true;
+
+        const feed    = document.getElementById('comm-feed');
+        const skel    = document.getElementById('community-skeleton');
+        const loadBtn = document.getElementById('comm-load-btn');
+
+        if (initial) {
+            skel.style.display = 'flex';
+            skel.style.flexDirection = 'column';
+        } else {
+            if (loadBtn) { loadBtn.disabled = true; loadBtn.innerHTML = '<span class="comm-spinner"></span> Loading...'; }
+        }
+
+        try {
+            const data = await fetchPosts(currentChannel, currentPage);
+            if (initial) skel.style.display = 'none';
+
+          
+            const postsPayload = data?.data?.data ?? data?.data ?? {};
+            if (data.success && postsPayload.posts) {
+                const posts = postsPayload.posts;
+                const hasNext = postsPayload.hasNextPage;
+                const count   = postsPayload.count;
+
+                posts.forEach(p => {
+                    feed.insertAdjacentHTML('beforeend', renderPost(p));
+                });
+
+                const loadWrap = document.getElementById('comm-load-wrap');
+                if (hasNext && count >= 10) {
+                    loadWrap.style.display = 'block';
+                    if (loadBtn) { loadBtn.disabled = false; loadBtn.innerHTML = 'Load More Posts'; }
+                } else {
+                    loadWrap.style.display = 'none';
+                }
+                currentPage++;
+            } else {
+                if (initial) {
+                    feed.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><p>No posts yet</p></div>';
+                }
+            }
+        } catch(e) {
+            if (initial) {
+                skel.style.display = 'none';
+                feed.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load posts</p></div>';
+            }
+        }
+        isLoading = false;
+    }
+
+    window.loadMorePosts = function() { loadPosts(false); };
+
+    window.initCommunity = function() {
+        if (communityInited) return;
+        communityInited = true;
+        const firstBtn = document.querySelector('.comm-ch-btn');
+        if (firstBtn) {
+            currentChannel = firstBtn.dataset.channelId;
+            loadPosts(true);
+        }
+    };
+
+    // Lightbox
+    window.openLb = function(src) {
+        document.getElementById('img-lb-img').src = src;
+        document.getElementById('img-lb').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    };
+    window.closeLb = function(e) {
+        if (e && e.target.id !== 'img-lb' && e.target.id !== 'img-lb-close') return;
+        document.getElementById('img-lb').classList.remove('show');
+        document.body.style.overflow = '';
+    };
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb({target:{id:'img-lb'}}); });
+})();
+</script>
+</body>
+</html>
