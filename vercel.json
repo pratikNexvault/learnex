@@ -8,6 +8,7 @@
     { "source": "/topics", "destination": "/topics.html" },
     { "source": "/player", "destination": "/player.html" },
     { "source": "/access", "destination": "/access.html" },
+    { "source": "/Content", "destination": "/course.html" },
     { "source": "/generate", "destination": "/generate.html" }
   ]
 }
