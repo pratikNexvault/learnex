@@ -3,21 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Access Denied · LearnEx</title>
+<title>Access · LearnEx</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root {
-  --bg: #080a10;
-  --s1: #0f1220;
-  --b1: rgba(255, 255, 255, .05);
-  --tx: #eef2ff;
-  --tx2: rgba(238, 242, 255, .58);
-  --tx3: rgba(238, 242, 255, .28);
-  --gn: #4ade80;
-  --rd: #f43f5e;
-  --a1: #be185d;   /* deep pink */
-  --a2: #ec4899;   /* hot pink */
-  --a3: #fbcfe8;   /* blush */
+:root{
+  --bg:#080a10;--s1:#0f1220;--b1:rgba(255,255,255,.05);
+  --tx:#eef2ff;--tx2:rgba(238,242,255,.58);--tx3:rgba(238,242,255,.28);
+  --gn:#4ade80;--rd:#f43f5e;
 }
 html,body{height:100%}
 body{
@@ -45,93 +37,110 @@ body{
   text-align:center;
   animation:rise .45s cubic-bezier(.16,1,.3,1) both;
 }
-.card::before{
-  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
-}
+.card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;}
 .card.ok::before{background:linear-gradient(90deg,transparent,rgba(16,185,129,.6),transparent)}
 .card.err::before{background:linear-gradient(90deg,transparent,rgba(244,63,94,.5),transparent)}
 @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-.ico{
-  width:68px;height:68px;border-radius:18px;
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 22px;font-size:2rem;
-}
+.ico{width:68px;height:68px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:2rem;}
 .ico.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)}
 .ico.err{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2)}
 h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
 .sub{font-size:.82rem;color:var(--tx2);line-height:1.65;margin-bottom:20px}
-.timer-bar-wrap{
-  background:rgba(255,255,255,.04);border-radius:100px;
-  height:4px;margin:20px 0 10px;overflow:hidden;
-}
-.timer-bar{
-  height:100%;border-radius:100px;
-  background:linear-gradient(90deg,var(--gn),rgba(16,185,129,.5));
-  width:100%;transition:width .1s linear;
-}
-.timer-bar.err-bar{background:linear-gradient(90deg,var(--rd),rgba(244,63,94,.5))}
+.timer-bar-wrap{background:rgba(255,255,255,.04);border-radius:100px;height:4px;margin:20px 0 10px;overflow:hidden;}
+.timer-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--gn),rgba(16,185,129,.5));width:100%;transition:width .1s linear;}
 .timer-txt{font-size:.66rem;color:var(--tx3);font-weight:600;letter-spacing:.06em}
 .retry-btn{
   margin-top:18px;display:inline-flex;align-items:center;gap:8px;
   padding:12px 22px;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.22);
   border-radius:10px;color:var(--rd);font-size:.78rem;font-weight:700;
-  text-decoration:none;transition:.2s;
-  font-family:inherit;cursor:pointer;
+  text-decoration:none;transition:.2s;font-family:inherit;cursor:pointer;
 }
 .retry-btn:hover{background:rgba(244,63,94,.18)}
 </style>
 </head>
 <body>
 
-<div class="atm">
-  <div class="sp sp1 err"></div>
-</div>
+<div class="atm"><div class="sp sp1 err" id="spEl"></div></div>
 <div class="grid-bg"></div>
 
-<!-- ── ACCESS DENIED ── -->
-<div class="card err">
-  <div class="ico err">🚫</div>
-  <h1>Access Denied</h1>
-  <p class="sub">
+<!-- Default: Access Denied (shown if JS fails) -->
+<div class="card err" id="mainCard">
+  <div class="ico err" id="icoEl">🚫</div>
+  <h1 id="titleEl">Access Denied</h1>
+  <p class="sub" id="subEl">
     You must arrive here through the <strong>official short link</strong>.<br>
     Direct access is not allowed.
   </p>
-  <a class="retry-btn" href="https://vplink.in/94G4">← Go Back &amp; Try Again</a>
+  <a class="retry-btn" href="https://vplink.in/94G4" id="retryBtn">← Go Back &amp; Try Again</a>
+  <!-- Success state timer -->
+  <div class="timer-bar-wrap" id="timerWrap" style="display:none">
+    <div class="timer-bar" id="timerBar"></div>
+  </div>
+  <div class="timer-txt" id="timerTxt" style="display:none">Redirecting…</div>
 </div>
 
 <script>
 (function(){
   try{
-    const params = new URLSearchParams(window.location.search);
+    var params = new URLSearchParams(window.location.search);
 
-    // ── BYPASS RETURN: Vplinks completed → write both tokens ──────────────
-    if(params.get('bypass') === '1'){
-  localStorage.setItem('rcz_token', JSON.stringify({
-    exp: Date.now() + 86400000,
-    grantedAt: Date.now()
-  }));
-  localStorage.setItem('main_access', 'granted');
-  localStorage.setItem('main_expiry', String(Date.now() + 86400000));
-  setTimeout(function(){ location.replace('/NT'); }, 1400);
-  return;
+    /* ── Helper: save rcz_token (what guard.js reads) ── */
+    function grantAccess(){
+      localStorage.setItem('rcz_token', JSON.stringify({
+        exp: Date.now() + 86400000,
+        grantedAt: Date.now()
+      }));
     }
 
-    // ── EXISTING TOKEN CHECK ────────────────────────────────────────────────
-    const access = localStorage.getItem('main_access');
-    const expiry = Number(localStorage.getItem('main_expiry') || '0');
+    /* ── Helper: check existing token ── */
+    function hasValidToken(){
+      try{
+        var raw = localStorage.getItem('rcz_token');
+        if(!raw) return false;
+        var d = JSON.parse(raw);
+        return d && typeof d.exp === 'number' && Date.now() < d.exp;
+      }catch(e){ return false; }
+    }
 
-    if(access === 'granted' && Date.now() < expiry){
-      // Valid session — redirect to /PW
+    /* ── Show success UI and redirect ── */
+    function showSuccess(){
+      var card = document.getElementById('mainCard');
+      var sp   = document.getElementById('spEl');
+      card.classList.remove('err'); card.classList.add('ok');
+      sp.classList.remove('err');   sp.classList.add('ok');
+      document.getElementById('icoEl').textContent   = '✅';
+      document.getElementById('titleEl').textContent = 'Access Granted!';
+      document.getElementById('subEl').innerHTML     = '24 ghante ke liye access unlock ho gaya.<br>Redirect ho raha hai…';
+      document.getElementById('retryBtn').style.display = 'none';
+      document.getElementById('timerWrap').style.display = 'block';
+      document.getElementById('timerTxt').style.display  = 'block';
+
+      /* shrink bar over 1.4s */
+      var bar = document.getElementById('timerBar');
+      bar.style.width = '100%';
+      setTimeout(function(){ bar.style.transition='width 1.3s linear'; bar.style.width='0%'; }, 50);
+
       setTimeout(function(){ location.replace('/NT'); }, 1400);
-    } else if(access !== null){
-      // Expired — clean up storage
-      localStorage.removeItem('main_access');
-      localStorage.removeItem('main_expiry');
     }
+
+    /* ── CASE 1: Coming back from vplink (bypass=1) ── */
+    if(params.get('bypass') === '1'){
+      grantAccess();
+      showSuccess();
+      return;
+    }
+
+    /* ── CASE 2: Already has valid token ── */
+    if(hasValidToken()){
+      showSuccess();
+      return;
+    }
+
+    /* ── CASE 3: Direct access, no token — show denied (default UI already shown) ── */
+
   }catch(e){}
 })();
 </script>
 
 </body>
 </html>
-
