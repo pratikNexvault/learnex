@@ -355,29 +355,28 @@ h1{
   try{
     const params = new URLSearchParams(window.location.search);
 
-    // ── BYPASS RETURN: Vplinks completed → write both tokens ──────────────
+    // ── BYPASS RETURN: Shrtfly completed → write both tokens ──────────────
     if(params.get('bypass') === '1'){
-      localStorage.setItem('main_access', 'granted');
-      localStorage.setItem('main_expiry', String(Date.now() + 86400000)); // +24 h
+      localStorage.setItem('rcz_token', JSON.stringify({exp: Date.now() + 86400000, grantedAt: Date.now()}));
+      
       const b = document.getElementById('successBanner');
       if(b){ b.textContent = '✅ Access unlock ho gaya! Redirect ho raha hai…'; b.style.display='block'; }
-      setTimeout(function(){ location.replace('/PW'); }, 1400);
+      setTimeout(function(){ location.replace('/NT'); }, 1400);
       return;
     }
 
     // ── EXISTING TOKEN CHECK ────────────────────────────────────────────────
-    const access = localStorage.getItem('main_access');
-    const expiry = parseInt(localStorage.getItem('main_expiry') || '0', 10);
+    const raw = localStorage.getItem('rcz_token'); const tokenData = raw ? JSON.parse(raw) : null; const access = (tokenData && tokenData.exp > Date.now()) ? 'granted' : null;
 
-    if(access === 'granted' && Date.now() < expiry){
+    if(access === 'granted'){
       // Valid session — show banner and redirect
       const b = document.getElementById('successBanner');
       if(b){ b.style.display = 'block'; }
-      setTimeout(function(){ location.replace('/PW'); }, 1400);
+      setTimeout(function(){ location.replace('/NT'); }, 1400);
     } else if(access !== null){
       // Expired — clean up before user sees the page
-      localStorage.removeItem('main_access');
-      localStorage.removeItem('main_expiry');
+      localStorage.removeItem('rcz_token');
+      
     }
   }catch(e){}
 })();
