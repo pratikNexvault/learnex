@@ -106,10 +106,14 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
 
     // ── BYPASS RETURN: Shrtfly completed → write both tokens ──────────────
     if(params.get('bypass') === '1'){
-      localStorage.setItem('main_access', 'granted');
-      localStorage.setItem('main_expiry', String(Date.now() + 86400000)); // +24 h
-      setTimeout(function(){ location.replace('/PW'); }, 1400);
-      return;
+  localStorage.setItem('rcz_token', JSON.stringify({
+    exp: Date.now() + 86400000,
+    grantedAt: Date.now()
+  }));
+  localStorage.setItem('main_access', 'granted');
+  localStorage.setItem('main_expiry', String(Date.now() + 86400000));
+  setTimeout(function(){ location.replace('/NT'); }, 1400);
+  return;
     }
 
     // ── EXISTING TOKEN CHECK ────────────────────────────────────────────────
@@ -118,7 +122,7 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
 
     if(access === 'granted' && Date.now() < expiry){
       // Valid session — redirect to /PW
-      setTimeout(function(){ location.replace('/PW'); }, 1400);
+      setTimeout(function(){ location.replace('/NT'); }, 1400);
     } else if(access !== null){
       // Expired — clean up storage
       localStorage.removeItem('main_access');
