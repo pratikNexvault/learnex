@@ -397,7 +397,7 @@ h1{
     }
   }catch(e){}
 })();
-const YT='https://youtube.com/shorts/uO0MLEam2xA?si=UEAz6hUNLDvnJPSp?autoplay=1&rel=0&modestbranding=1';
+const YT='https://youtube.com/embed/uO0MLEam2xA?si=UEAz6hUNLDvnJPSp?autoplay=1&rel=0&modestbranding=1';
 function openVideo(){document.getElementById('ytFrame').src=YT;document.getElementById('videoModal').classList.add('open');document.body.style.overflow='hidden'}
 function closeVideo(){document.getElementById('ytFrame').src='';document.getElementById('videoModal').classList.remove('open');document.body.style.overflow=''}
 function oc(e){if(e.target===document.getElementById('videoModal'))closeVideo()}
