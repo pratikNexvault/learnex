@@ -123,10 +123,19 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
       setTimeout(function(){ location.replace('/NT'); }, 1400);
     }
 
-    /* ── CASE 1: Coming back from vplink (bypass=1) ── */
+    /* ── CASE 1: Coming back from arolinks (bypass=1) ── */
     if(params.get('bypass') === '1'){
-      grantAccess();
-      showSuccess();
+      var flowNonce = sessionStorage.getItem('rcz_flow_nonce');
+      var flowTime = parseInt(sessionStorage.getItem('rcz_flow_time') || '0');
+      
+      if(flowNonce && (Date.now() - flowTime) < 300000){
+        // Valid flow — clean markers, grant access
+        sessionStorage.removeItem('rcz_flow_nonce');
+        sessionStorage.removeItem('rcz_flow_time');
+        grantAccess();
+        showSuccess();
+      }
+      // else: stay on "Access Denied" (default HTML)
       return;
     }
 
@@ -140,6 +149,17 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
 
   }catch(e){}
 })();
+
+/* ── Flow marker: save before redirect to arolinks ── */
+document.addEventListener('DOMContentLoaded',function(){
+  var btn=document.getElementById('retryBtn');
+  if(btn){
+    btn.addEventListener('click',function(){
+      sessionStorage.setItem('rcz_flow_nonce',Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
+      sessionStorage.setItem('rcz_flow_time',Date.now().toString());
+    });
+  }
+});
 </script>
 
 </body>
