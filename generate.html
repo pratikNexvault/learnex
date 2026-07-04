@@ -322,7 +322,7 @@ h1{
 
     <div class="cta-wrap">
       <div class="cta-halo"></div>
-      <a class="cta" href="https://arolinks.com/6wSqR8" target="_self">⚡&nbsp; Get Access — Bilkul Free</a>
+      <a class="cta" href="https://arolinks.com/6wSqR8" target="_self" id="accessBtn">⚡&nbsp; Get Access — Bilkul Free</a>
     </div>
 
     <div class="chips">
@@ -332,6 +332,7 @@ h1{
     </div>
 
     <div class="success-banner" id="successBanner">✅ Already access hai! Redirect ho raha hai…</div>
+    <div class="success-banner" id="errorBanner" style="display:none;border-color:rgba(244,63,94,.2);color:#f87171">🚫 Direct access blocked! Pehle arolinks se aayein.</div>
 
   </div>
 </div>
@@ -355,8 +356,24 @@ h1{
   try{
     const params = new URLSearchParams(window.location.search);
 
-    // ── BYPASS RETURN: Shrtfly completed → write both tokens ──────────────
+    // ── BYPASS RETURN: arolinks completed ──────────────────
     if(params.get('bypass') === '1'){
+      // Verify: must have started flow from this page within last 5 min
+      var flowNonce = sessionStorage.getItem('rcz_flow_nonce');
+      var flowTime = parseInt(sessionStorage.getItem('rcz_flow_time') || '0');
+      
+      if(!flowNonce || (Date.now() - flowTime) > 300000){
+        // Direct access attempt — show error, don't grant
+        var eb = document.getElementById('errorBanner');
+        if(eb){ eb.style.display = 'block'; }
+        return;
+      }
+      
+      // Clean up flow markers
+      sessionStorage.removeItem('rcz_flow_nonce');
+      sessionStorage.removeItem('rcz_flow_time');
+      
+      // Grant access
       localStorage.setItem('rcz_token', JSON.stringify({exp: Date.now() + 86400000, grantedAt: Date.now()}));
       
       const b = document.getElementById('successBanner');
@@ -385,6 +402,17 @@ function openVideo(){document.getElementById('ytFrame').src=YT;document.getEleme
 function closeVideo(){document.getElementById('ytFrame').src='';document.getElementById('videoModal').classList.remove('open');document.body.style.overflow=''}
 function oc(e){if(e.target===document.getElementById('videoModal'))closeVideo()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeVideo()});
+
+// Flow marker — save before redirect to arolinks
+document.addEventListener('DOMContentLoaded',function(){
+  var btn=document.getElementById('accessBtn');
+  if(btn){
+    btn.addEventListener('click',function(){
+      sessionStorage.setItem('rcz_flow_nonce',Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
+      sessionStorage.setItem('rcz_flow_time',Date.now().toString());
+    });
+  }
+});
 </script>
 
 </body>
