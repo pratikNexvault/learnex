@@ -84,9 +84,9 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
   try{
     var params = new URLSearchParams(window.location.search);
 
-    /* ── Helper: save rcz_token (what guard.js reads) ── */
+    /* ── Helper: save lx_token (what guard.js reads) ── */
     function grantAccess(){
-      localStorage.setItem('rcz_token', JSON.stringify({
+      localStorage.setItem('lx_token', JSON.stringify({
         exp: Date.now() + 86400000,
         grantedAt: Date.now()
       }));
@@ -95,7 +95,7 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
     /* ── Helper: check existing token ── */
     function hasValidToken(){
       try{
-        var raw = localStorage.getItem('rcz_token');
+        var raw = localStorage.getItem('lx_token');
         if(!raw) return false;
         var d = JSON.parse(raw);
         return d && typeof d.exp === 'number' && Date.now() < d.exp;
@@ -120,22 +120,35 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
       bar.style.width = '100%';
       setTimeout(function(){ bar.style.transition='width 1.3s linear'; bar.style.width='0%'; }, 50);
 
-      setTimeout(function(){ location.replace('/NT'); }, 1400);
+      setTimeout(function(){
+        var returnUrl = sessionStorage.getItem('lx_return');
+        if(returnUrl){
+          sessionStorage.removeItem('lx_return');
+          location.replace(returnUrl);
+        } else {
+          location.replace('/NT');
+        }
+      }, 1400);
     }
 
-    /* ── CASE 1: Coming back from arolinks (bypass=1) ── */
-    if(params.get('bypass') === '1'){
-      var flowNonce = sessionStorage.getItem('rcz_flow_nonce');
-      var flowTime = parseInt(sessionStorage.getItem('rcz_flow_time') || '0');
-      
-      if(flowNonce && (Date.now() - flowTime) < 300000){
-        // Valid flow — clean markers, grant access
-        sessionStorage.removeItem('rcz_flow_nonce');
-        sessionStorage.removeItem('rcz_flow_time');
-        grantAccess();
-        showSuccess();
-      }
-      // else: stay on "Access Denied" (default HTML)
+    /* ── Helper: read cookie ── */
+    function getCookie(name){
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    /* ── Helper: set cookie ── */
+    function setCookie(name, value, minutes){
+      var d = new Date();
+      d.setTime(d.getTime() + minutes*60*1000);
+      document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + d.toUTCString() + '; path=/';
+    }
+
+    /* ── CASE 1: Coming back from short-link after verification ── */
+    if(params.get('bypass') === '1' || getCookie('lx_bypass')){
+      grantAccess();
+      document.cookie = 'lx_bypass=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+      showSuccess();
       return;
     }
 
@@ -145,7 +158,9 @@ h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
       return;
     }
 
-    /* ── CASE 3: Direct access, no token — show denied (default UI already shown) ── */
+    /* ── CASE 3: Direct access, no token — auto-grant access ── */
+    grantAccess();
+    showSuccess();
 
   }catch(e){}
 })();
@@ -155,8 +170,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var btn=document.getElementById('retryBtn');
   if(btn){
     btn.addEventListener('click',function(){
-      sessionStorage.setItem('rcz_flow_nonce',Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
-      sessionStorage.setItem('rcz_flow_time',Date.now().toString());
+      setCookie('lx_bypass', '1', 5);
     });
   }
 });
